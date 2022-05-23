@@ -670,25 +670,40 @@ class BynderDriver extends AbstractDriver
     }
 
     /**
+     * We have to override TYPO3's version of this method, as Bynder identifiers do not have an appended
+     * file extension.
+     */
+    protected function getTemporaryPathForFile($fileIdentifier)
+    {
+        // Fallback to "jpg". FAL needs an extension, else img processing will not work
+        $fileExtension = $this->getFileInfoByIdentifier($fileIdentifier, ['extension'])['extension'] ?? 'jpg';
+
+        return GeneralUtility::tempnam(
+            'bynder-tempfile-',
+            '.' . $fileExtension
+        );
+    }
+
+
+    /**
      * Bynder delivers 3 pre-configured thumbnails over its CDN.
      * Check, if we can use them, for faster rendering.
      *
      * Must be public as it was used by our EventListeners
      */
-    public function getProcessingUrl(string $fileIdentifier, array $configuration): string
+    public function getProcessingUrl(string $fileIdentifier, array $configuration, array $fileInfoResponse = []): string
     {
-        if (!isset($configuration['width'])) {
-            return '';
+        // Please try to assign $fileInfoResponse to prevent multiple API calls
+        if ($fileInfoResponse === []) {
+            $fileInfoResponse = $this->getFileInfoResponse($fileIdentifier);
         }
 
-        $width = (int)$configuration['width'];
-        $fileInfoResponse = $this->getFileInfoResponse($fileIdentifier);
         $processingUrl = '';
-        if ($width <= 80) {
+        if ($configuration['width'] <= 80) {
             $processingUrl = $fileInfoResponse['thumbnails']['mini'] ?? '';
-        } elseif ($width <= 250) {
+        } elseif ($configuration['width'] <= 250) {
             $processingUrl = $fileInfoResponse['thumbnails']['thul'] ?? '';
-        } elseif ($width <= 800) {
+        } elseif ($configuration['width'] <= 800) {
             $processingUrl = $fileInfoResponse['thumbnails']['webimage'] ?? '';
         }
 
