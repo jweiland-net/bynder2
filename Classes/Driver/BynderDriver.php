@@ -509,10 +509,13 @@ class BynderDriver extends AbstractDriver
             $start = (int)ceil($start / $numberOfItems) + 1;
         }
 
+        $sort = $sort ?: 'dateModified';
         $orderBy = [
             'file' => 'name',
-            'file1' => 'dateCreated',
-            'file2' => 'dateModified',
+            'tstamp' => 'dateModified',
+            'size' => 'dateModified',
+            'fileext' => 'dateModified',
+            'rw' => 'dateModified',
         ];
 
         $ordering = $sortRev ? 'desc' : 'asc';
