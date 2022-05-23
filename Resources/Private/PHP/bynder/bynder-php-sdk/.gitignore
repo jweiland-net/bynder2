@@ -1,0 +1,11 @@
+/nbproject/
+/vendor/
+composer.lock
+docker-compose.yml
+index.php
+site.conf
+*.jpg
+*.jpeg
+*.txt
+tests/*/config.json
+.idea

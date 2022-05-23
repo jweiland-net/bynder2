@@ -1,0 +1,30 @@
+<div class="typo3-message message-ok alert alert-success">You are now connected with your bynder account</div>
+
+<table class="t3-table table table-striped">
+	<tbody>
+	<tr>
+		<td>Active</td>
+		<td>{f:if(condition: account.active, then: 'Yes', else: 'No')}</td>
+	</tr>
+	<tr>
+		<td>Name</td>
+		<td>{account.firstname} {account.lastname}</td>
+	</tr>
+	<tr>
+		<td>E-Mail</td>
+		<td>{account.email}</td>
+	</tr>
+	<tr>
+		<td>Language</td>
+		<td>{account.language}</td>
+	</tr>
+	<tr>
+		<td>Groups</td>
+		<td>
+			<f:for each="{account.groups}" as="group">
+				- {group.name}<br>
+			</f:for>
+		</td>
+	</tr>
+	</tbody>
+</table>
