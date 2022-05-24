@@ -3,15 +3,15 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the package jweiland/fal-bynder.
+ * This file is part of the package jweiland/bynder2.
  *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
 
-namespace JWeiland\FalBynder\EventListener;
+namespace JWeiland\Bynder2\EventListener;
 
-use JWeiland\FalBynder\Driver\BynderDriver;
+use JWeiland\Bynder2\Driver\BynderDriver;
 use TYPO3\CMS\Core\Resource\Event\BeforeFileProcessingEvent;
 
 class BeforeFileProcessingEventListener

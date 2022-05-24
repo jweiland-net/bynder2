@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the package jweiland/fal-bynder.
+ * This file is part of the package jweiland/bynder2.
  *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
 
-namespace JWeiland\FalBynder\Form\Element;
+namespace JWeiland\Bynder2\Form\Element;
 
 use Bynder\Api\BynderApiFactory;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
@@ -56,7 +56,7 @@ class BynderStatusElement extends AbstractFormElement
             $view = GeneralUtility::makeInstance(StandaloneView::class);
             $view->setTemplatePathAndFilename(
                 GeneralUtility::getFileAbsFileName(
-                    'EXT:fal_bynder/Resources/Templates/ShowAccountStatus.html'
+                    'EXT:bynder2/Resources/Templates/ShowAccountStatus.html'
                 )
             );
 

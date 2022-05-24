@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the package jweiland/fal-bynder.
+ * This file is part of the package jweiland/bynder2.
  *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
 
-namespace JWeiland\FalBynder\Xclass;
+namespace JWeiland\Bynder2\Xclass;
 
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Imaging\Icon;
@@ -66,7 +66,7 @@ class FileList extends \TYPO3\CMS\Filelist\FileList
 
         // document view
         if ($fileOrFolderObject instanceof File) {
-            if ($fileOrFolderObject->getStorage()->getDriverType() === 'fal_bynder') {
+            if ($fileOrFolderObject->getStorage()->getDriverType() === 'bynder2') {
                 $cells['view'] = $this->spaceIcon;
             } else {
                 $fileUrl = $fileOrFolderObject->getPublicUrl(true);

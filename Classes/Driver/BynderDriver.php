@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the package jweiland/fal-bynder.
+ * This file is part of the package jweiland/bynder2.
  *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
 
-namespace JWeiland\FalBynder\Driver;
+namespace JWeiland\Bynder2\Driver;
 
 use Bynder\Api\BynderApiFactory;
 use Bynder\Api\Impl\BynderApi;
@@ -73,7 +73,7 @@ class BynderDriver extends AbstractDriver
     public function initialize(): void
     {
         $this->cache = GeneralUtility::makeInstance(CacheManager::class)
-            ->getCache('fal_bynder');
+            ->getCache('bynder2');
 
         if (
             isset(

@@ -4,20 +4,20 @@ services:
     autoconfigure: true
     public: false
 
-  JWeiland\FalBynder\:
+  JWeiland\Bynder2\:
     resource: '../Classes/*'
 
-  JWeiland\FalBynder\EventListener\BeforeFileProcessingEventListener:
+  JWeiland\Bynder2\EventListener\BeforeFileProcessingEventListener:
     tags:
     - name: event.listener
       event: TYPO3\CMS\Core\Resource\Event\BeforeFileProcessingEvent
 
-  JWeiland\FalBynder\EventListener\GeneratePublicUrlForResourceEventListener:
+  JWeiland\Bynder2\EventListener\GeneratePublicUrlForResourceEventListener:
     tags:
     - name: event.listener
       event: TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent
 
-  # Register commands for fal_bynder
-  JWeiland\FalBynder\Command\SyncBynderFilesCommand:
+  # Register commands for bynder2
+  JWeiland\Bynder2\Command\SyncBynderFilesCommand:
     tags:
     - { name: 'console.command', command: 'fal:bynder:sync', schedulable: true }

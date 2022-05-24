@@ -8,7 +8,7 @@
 		<el>
 			<url>
 				<TCEforms>
-					<label>LLL:EXT:fal_bynder/Resources/Private/Language/FlexForm.xlf:url</label>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:url</label>
 					<config>
 						<type>input</type>
 						<eval>trim</eval>
@@ -18,7 +18,7 @@
 			</url>
 			<otf_base_url>
 				<TCEforms>
-					<label>LLL:EXT:fal_bynder/Resources/Private/Language/FlexForm.xlf:otf_base_url</label>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:otf_base_url</label>
 					<config>
 						<type>input</type>
 						<eval>trim</eval>
@@ -28,7 +28,7 @@
 			</otf_base_url>
 			<consumer_key>
 				<TCEforms>
-					<label>LLL:EXT:fal_bynder/Resources/Private/Language/FlexForm.xlf:consumer_key</label>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:consumer_key</label>
 					<config>
 						<type>input</type>
 						<eval>trim</eval>
@@ -38,7 +38,7 @@
 			</consumer_key>
 			<consumer_secret>
 				<TCEforms>
-					<label>LLL:EXT:fal_bynder/Resources/Private/Language/FlexForm.xlf:consumer_secret</label>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:consumer_secret</label>
 					<config>
 						<type>input</type>
 						<eval>trim</eval>
@@ -48,7 +48,7 @@
 			</consumer_secret>
 			<token_key>
 				<TCEforms>
-					<label>LLL:EXT:fal_bynder/Resources/Private/Language/FlexForm.xlf:token_key</label>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:token_key</label>
 					<config>
 						<type>input</type>
 						<eval>trim</eval>
@@ -58,7 +58,7 @@
 			</token_key>
 			<token_secret>
 				<TCEforms>
-					<label>LLL:EXT:fal_bynder/Resources/Private/Language/FlexForm.xlf:token_secret</label>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:token_secret</label>
 					<config>
 						<type>input</type>
 						<eval>trim</eval>
@@ -68,7 +68,7 @@
 			</token_secret>
 			<bynderStatus>
 				<TCEforms>
-					<label>LLL:EXT:fal_bynder/Resources/Private/Language/FlexForm.xlf:bynderStatus</label>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:bynderStatus</label>
 					<config>
 						<type>user</type>
 						<renderType>bynderStatus</renderType>

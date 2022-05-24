@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the package jweiland/fal-bynder.
+ * This file is part of the package jweiland/bynder2.
  *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
 
-namespace JWeiland\FalBynder\Command;
+namespace JWeiland\Bynder2\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -60,10 +60,10 @@ class SyncBynderFilesCommand extends Command
     protected function clearCache(): void
     {
         try {
-            $cache = GeneralUtility::makeInstance(CacheManager::class)->getCache('fal_bynder');
+            $cache = GeneralUtility::makeInstance(CacheManager::class)->getCache('bynder2');
             $cache->flush();
         } catch (NoSuchCacheException $noSuchCacheException) {
-            $this->output->writeln('Cache fal_bynder not found. Please check your cache configuration or DB tables.');
+            $this->output->writeln('Cache bynder2 not found. Please check your cache configuration or DB tables.');
         }
     }
 
@@ -119,6 +119,6 @@ class SyncBynderFilesCommand extends Command
     {
         $storageRepository = GeneralUtility::makeInstance(StorageRepository::class);
 
-        return $storageRepository->findByStorageType('fal_bynder');
+        return $storageRepository->findByStorageType('bynder2');
     }
 }

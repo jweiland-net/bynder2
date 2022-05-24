@@ -1,8 +1,8 @@
-# TYPO3 Extension `fal_bynder`
+# TYPO3 Extension `bynder2`
 
-![Build Status](https://github.com/jweiland-net/fal_bynder/workflows/CI/badge.svg)
+![Build Status](https://github.com/jweiland-net/bynder2/workflows/CI/badge.svg)
 
-fal_bynder is a TYPO3 extension which registers a TYPO3 FAL driver for
+bynder2 is a TYPO3 extension which registers a TYPO3 FAL driver for
 Bynder https://www.bynder.com/
 
 ## 1 Features
@@ -23,12 +23,12 @@ The recommended way to install the extension is using Composer.
 Run the following command within your Composer based TYPO3 project:
 
 ```
-composer require jweiland/fal-bynder
+composer require jweiland/bynder2
 ```
 
 #### Installation as extension from TYPO3 Extension Repository (TER)
 
-Download and install `fal_bynder` with the extension manager module.
+Download and install `bynder2` with the extension manager module.
 
 ### 2.2 Minimal setup
 

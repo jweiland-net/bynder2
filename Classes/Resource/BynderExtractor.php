@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the package jweiland/fal-bynder.
+ * This file is part of the package jweiland/bynder2.
  *
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
 
-namespace JWeiland\FalBynder\Resource;
+namespace JWeiland\Bynder2\Resource;
 
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Index\ExtractorInterface;
@@ -28,7 +28,7 @@ class BynderExtractor implements ExtractorInterface
     public function getDriverRestrictions(): array
     {
         return [
-            'fal_bynder'
+            'bynder2'
         ];
     }
 
