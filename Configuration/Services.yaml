@@ -16,3 +16,8 @@ services:
     tags:
     - name: event.listener
       event: TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent
+
+  # Register commands for fal_bynder
+  JWeiland\FalBynder\Command\SyncBynderFilesCommand:
+    tags:
+    - { name: 'console.command', command: 'fal:bynder:sync', schedulable: true }
