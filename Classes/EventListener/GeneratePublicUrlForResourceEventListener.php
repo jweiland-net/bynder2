@@ -13,6 +13,7 @@ namespace JWeiland\FalBynder\EventListener;
 
 use JWeiland\FalBynder\Driver\BynderDriver;
 use TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent;
+use TYPO3\CMS\Filelist\FileFacade;
 
 class GeneratePublicUrlForResourceEventListener
 {
@@ -23,8 +24,31 @@ class GeneratePublicUrlForResourceEventListener
             return;
         }
 
-        $fileInfoResponse = $bynderDriver->getMediaDownloadResponse($event->getResource()->getIdentifier());
+        $publicUrl = '';
+        if (!$this->isSearchCall()) {
+            $fileInfoResponse = $bynderDriver->getMediaDownloadResponse($event->getResource()->getIdentifier());
+            $publicUrl = $fileInfoResponse['s3_file'] ?? '';
+        }
 
-        $event->setPublicUrl($fileInfoResponse['s3_file'] ?? '');
+        $event->setPublicUrl($publicUrl);
+    }
+
+    /**
+     * In case of filelist search a fluid template will be used to render the list of records.
+     * Instead of XClassing filelist controller and change templates we check the PHP calling history.
+     * FileFacades are only used in filelist search.
+     *
+     * @return bool
+     */
+    protected function isSearchCall(): bool
+    {
+        $backTrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 7);
+        foreach ($backTrace as $entry) {
+            if ($entry['class'] === FileFacade::class && $entry['function'] === 'getPublicUrl') {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
