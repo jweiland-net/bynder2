@@ -1,0 +1,11 @@
+*~
+.idea/
+nbproject/
+.DS_Store
+*.bak
+*.idea
+*.project
+*.swp
+.project
+.webprj
+composer.lock

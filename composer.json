@@ -20,14 +20,16 @@
 	"require": {
 		"ext-dom": "*",
 		"ext-libxml": "*",
-		"typo3/cms-core": "^10.4.19",
+		"typo3/cms-core": "^10.4.19 || ^11.5.0",
 		"bynder/bynder-php-sdk": "1.0.9",
 		"guzzlehttp/oauth-subscriber": "0.3.0"
 	},
 	"require-dev": {
 		"roave/security-advisories": "dev-latest",
 		"friendsofphp/php-cs-fixer": "^3.0",
-		"nimut/testing-framework": "^6.0"
+		"nimut/testing-framework": "^6.0",
+		"phpunit/phpunit": "^9.5",
+		"phpspec/prophecy-phpunit": "^2.0"
 	},
 	"autoload": {
 		"psr-4": {
