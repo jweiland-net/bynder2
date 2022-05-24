@@ -46,7 +46,7 @@ class BynderDriver extends AbstractDriver
     /**
      * @var BynderApi|null
      */
-    protected $bynderClient = null;
+    protected $bynderClient;
 
     /**
      * @var FlashMessageService
@@ -681,7 +681,6 @@ class BynderDriver extends AbstractDriver
             '.' . $fileExtension
         );
     }
-
 
     /**
      * Bynder delivers 3 pre-configured thumbnails over its CDN.

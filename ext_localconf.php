@@ -11,7 +11,7 @@ call_user_func(static function (): void {
         'flexFormDS' => 'FILE:EXT:fal_bynder/Configuration/FlexForms/Bynder.xml',
     ];
 
-    // Show dropbox status in file storage
+    // Show bynder authentication status in file storage
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1653038580] = [
         'nodeName' => 'bynderStatus',
         'priority' => '70',
