@@ -15,8 +15,10 @@ use Bynder\Api\BynderApiFactory;
 use Bynder\Api\Impl\BynderApi;
 use In2code\Powermail\Utility\StringUtility;
 use TYPO3\CMS\Core\Cache\CacheManager;
+use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Charset\CharsetConverter;
+use TYPO3\CMS\Core\Imaging\ImageManipulation\Area;
 use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
@@ -24,6 +26,7 @@ use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Resource\Driver\AbstractDriver;
 use TYPO3\CMS\Core\Resource\Exception\InvalidFileNameException;
 use TYPO3\CMS\Core\Resource\Exception\InvalidPathException;
+use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\ResourceStorageInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
@@ -39,6 +42,11 @@ class BynderDriver extends AbstractDriver
     const UNSAFE_FILENAME_CHARACTER_EXPRESSION = '\\x00-\\x2C\\/\\x3A-\\x3F\\x5B-\\x60\\x7B-\\xBF';
 
     /**
+     * @var FlashMessageService
+     */
+    protected $flashMessageService;
+
+    /**
      * @var FrontendInterface
      */
     protected $cache;
@@ -47,11 +55,6 @@ class BynderDriver extends AbstractDriver
      * @var BynderApi|null
      */
     protected $bynderClient;
-
-    /**
-     * @var FlashMessageService
-     */
-    protected $flashMessageService;
 
     /**
      * @var array
@@ -72,8 +75,18 @@ class BynderDriver extends AbstractDriver
 
     public function initialize(): void
     {
-        $this->cache = GeneralUtility::makeInstance(CacheManager::class)
-            ->getCache('bynder2');
+        $this->flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
+
+        try {
+            $this->cache = GeneralUtility::makeInstance(CacheManager::class)
+                ->getCache('bynder2');
+        } catch (NoSuchCacheException $noSuchCacheException) {
+            $this->addFlashMessage(
+                'Cache for file information of bynder files could not be created. Please check cache configuration of DB tables',
+                'Cache error',
+                AbstractMessage::ERROR
+            );
+        }
 
         if (
             isset(
@@ -93,8 +106,6 @@ class BynderDriver extends AbstractDriver
                 ]
             );
         }
-
-        $this->flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
     }
 
     public function getCapabilities(): int
@@ -688,20 +699,31 @@ class BynderDriver extends AbstractDriver
      *
      * Must be public as it was used by our EventListeners
      */
-    public function getProcessingUrl(string $fileIdentifier, array $configuration, array $fileInfoResponse = []): string
+    public function getProcessingUrl(FileInterface $file, array $configuration, array $fileInfoResponse = []): string
     {
         // Please try to assign $fileInfoResponse to prevent multiple API calls
         if ($fileInfoResponse === []) {
-            $fileInfoResponse = $this->getFileInfoResponse($fileIdentifier);
+            $fileInfoResponse = $this->getFileInfoResponse($file->getIdentifier());
         }
 
+        // If cropping was not configured, we can return CDN URIs
         $processingUrl = '';
-        if ($configuration['width'] <= 80) {
-            $processingUrl = $fileInfoResponse['thumbnails']['mini'] ?? '';
-        } elseif ($configuration['width'] <= 250) {
-            $processingUrl = $fileInfoResponse['thumbnails']['thul'] ?? '';
-        } elseif ($configuration['width'] <= 800) {
-            $processingUrl = $fileInfoResponse['thumbnails']['webimage'] ?? '';
+        if (
+            isset($configuration['crop'])
+            && $configuration['crop'] instanceof Area
+            && ($cropArea = $configuration['crop'])
+            && $cropArea->getOffsetLeft() === 1.0
+            && $cropArea->getOffsetTop() === 1.0
+            && $cropArea->getWidth() === (float)$file->getProperty('width')
+            && $cropArea->getHeight() === (float)$file->getProperty('height')
+        ) {
+            if ($configuration['width'] <= 80) {
+                $processingUrl = $fileInfoResponse['thumbnails']['mini'] ?? '';
+            } elseif ($configuration['width'] <= 250) {
+                $processingUrl = $fileInfoResponse['thumbnails']['thul'] ?? '';
+            } elseif ($configuration['width'] <= 800) {
+                $processingUrl = $fileInfoResponse['thumbnails']['webimage'] ?? '';
+            }
         }
 
         return $processingUrl;
