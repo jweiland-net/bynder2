@@ -15,6 +15,7 @@ use Bynder\Api\BynderApiFactory;
 use Bynder\Api\Impl\BynderApi;
 use In2code\Powermail\Utility\StringUtility;
 use TYPO3\CMS\Core\Cache\CacheManager;
+use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Charset\CharsetConverter;
 use TYPO3\CMS\Core\Messaging\AbstractMessage;
@@ -39,6 +40,11 @@ class BynderDriver extends AbstractDriver
     const UNSAFE_FILENAME_CHARACTER_EXPRESSION = '\\x00-\\x2C\\/\\x3A-\\x3F\\x5B-\\x60\\x7B-\\xBF';
 
     /**
+     * @var FlashMessageService
+     */
+    protected $flashMessageService;
+
+    /**
      * @var FrontendInterface
      */
     protected $cache;
@@ -47,11 +53,6 @@ class BynderDriver extends AbstractDriver
      * @var BynderApi|null
      */
     protected $bynderClient;
-
-    /**
-     * @var FlashMessageService
-     */
-    protected $flashMessageService;
 
     /**
      * @var array
@@ -72,8 +73,18 @@ class BynderDriver extends AbstractDriver
 
     public function initialize(): void
     {
-        $this->cache = GeneralUtility::makeInstance(CacheManager::class)
-            ->getCache('bynder2');
+        $this->flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
+
+        try {
+            $this->cache = GeneralUtility::makeInstance(CacheManager::class)
+                ->getCache('bynder2');
+        } catch (NoSuchCacheException $noSuchCacheException) {
+            $this->addFlashMessage(
+                'Cache for file information of bynder files could not be created. Please check cache configuration of DB tables',
+                'Cache error',
+                AbstractMessage::ERROR
+            );
+        }
 
         if (
             isset(
@@ -93,8 +104,6 @@ class BynderDriver extends AbstractDriver
                 ]
             );
         }
-
-        $this->flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
     }
 
     public function getCapabilities(): int
