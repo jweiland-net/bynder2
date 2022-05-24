@@ -708,15 +708,7 @@ class BynderDriver extends AbstractDriver
 
         // If cropping was not configured, we can return CDN URIs
         $processingUrl = '';
-        if (
-            isset($configuration['crop'])
-            && $configuration['crop'] instanceof Area
-            && ($cropArea = $configuration['crop'])
-            && $cropArea->getOffsetLeft() === 1.0
-            && $cropArea->getOffsetTop() === 1.0
-            && $cropArea->getWidth() === (float)$file->getProperty('width')
-            && $cropArea->getHeight() === (float)$file->getProperty('height')
-        ) {
+        if (!$this->hasCroppingConfiguration($configuration)) {
             if ($configuration['width'] <= 80) {
                 $processingUrl = $fileInfoResponse['thumbnails']['mini'] ?? '';
             } elseif ($configuration['width'] <= 250) {
@@ -727,6 +719,12 @@ class BynderDriver extends AbstractDriver
         }
 
         return $processingUrl;
+    }
+
+    protected function hasCroppingConfiguration(array $configuration): bool
+    {
+        return isset($configuration['crop'])
+            && $configuration['crop'] instanceof Area;
     }
 
     /**
