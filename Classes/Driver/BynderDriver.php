@@ -75,8 +75,6 @@ class BynderDriver extends AbstractDriver
         $this->cache = GeneralUtility::makeInstance(CacheManager::class)
             ->getCache('fal_bynder');
 
-        // define('BYNDER_INTEGRATION_ID', '8517905e-6c2f-47c3-96ca-0312027bbc95');
-
         if (
             isset(
                 $this->configuration['consumer_key'],
@@ -545,7 +543,7 @@ class BynderDriver extends AbstractDriver
                 $this->cache->set($this->getFileCacheIdentifier($mediaFile['id']), $mediaFile);
             }
 
-            $this->cache->set($pageCacheIdentifier, $mediaResponse);
+            $this->cache->set($pageCacheIdentifier, $files);
         }
 
         return $files;

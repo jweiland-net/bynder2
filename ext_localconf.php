@@ -18,9 +18,11 @@ call_user_func(static function (): void {
         'class' => \JWeiland\FalBynder\Form\Element\BynderStatusElement::class
     ];
 
-    // create a temporary cache
+    // Cache for file information
+    // As long as Bynder storage is configured read-only we can use DB instead of transient cache.
+    // Cache will be cleared while CLI or scheduler Task
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['fal_bynder']['backend']
-        = \TYPO3\CMS\Core\Cache\Backend\TransientMemoryBackend::class;
+        = \TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend::class;
 
     // Remove document view in extended view of FileList
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Filelist\FileList::class]['className']

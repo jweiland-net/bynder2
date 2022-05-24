@@ -14,6 +14,8 @@ namespace JWeiland\FalBynder\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use TYPO3\CMS\Core\Cache\CacheManager;
+use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Resource\Exception\InsufficientFolderAccessPermissionsException;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Resource\StorageRepository;
@@ -47,11 +49,22 @@ class SyncBynderFilesCommand extends Command
     {
         $this->output = $output;
 
+        $output->writeln('Clear bynder information cache');
+        $this->clearCache();
         $output->writeln('Start synchronizing bynder files');
-        $output->writeln('');
         $this->synchronizeStorages();
 
         return 0;
+    }
+
+    protected function clearCache(): void
+    {
+        try {
+            $cache = GeneralUtility::makeInstance(CacheManager::class)->getCache('fal_bynder');
+            $cache->flush();
+        } catch (NoSuchCacheException $noSuchCacheException) {
+            $this->output->writeln('Cache fal_bynder not found. Please check your cache configuration or DB tables.');
+        }
     }
 
     protected function synchronizeStorages(): void
