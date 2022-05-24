@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace JWeiland\Bynder2\EventListener;
 
 use JWeiland\Bynder2\Driver\BynderDriver;
+use TYPO3\CMS\Core\Imaging\GraphicalFunctions;
 use TYPO3\CMS\Core\Resource\Event\BeforeFileProcessingEvent;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class BeforeFileProcessingEventListener
 {
@@ -26,44 +28,42 @@ class BeforeFileProcessingEventListener
         $fileInfoResponse = $bynderDriver->getFileInfoResponse($event->getFile()->getIdentifier());
         $configuration = $this->getUpdatedConfiguration($event->getConfiguration(), $fileInfoResponse);
 
-        $processingUrl = $bynderDriver->getProcessingUrl(
-            $event->getFile()->getIdentifier(),
-            $configuration,
-            $fileInfoResponse
-        );
+        $event->getProcessedFile()->updateProperties([
+            'width' => $configuration['width'],
+            'height' => $configuration['height']
+        ]);
 
-        if ($processingUrl) {
-            $event->getProcessedFile()->updateProperties([
-                'width' => $configuration['width'],
-                'height' => $configuration['height']
-            ]);
+        if ($processingUrl = $bynderDriver->getProcessingUrl($event->getFile(), $configuration, $fileInfoResponse)) {
             $event->getProcessedFile()->updateProcessingUrl($processingUrl);
         }
     }
 
     protected function getUpdatedConfiguration(array $configuration, array $fileInfoResponse): array
     {
-        $width = (int)($configuration['width'] ?? $configuration['maxWidth'] ?? 0);
-        $height = (int)($configuration['height'] ?? $configuration['maxHeight'] ?? 0);
-        if ($width === 0 && $height === 0) {
-            return $configuration;
+        $options = [
+            'noScale' => true
+        ];
+
+        if (isset($configuration['maxWidth'])) {
+            $options['maxW'] = $configuration['maxWidth'];
+        }
+        if (isset($configuration['maxHeight'])) {
+            $options['maxH'] = $configuration['maxHeight'];
         }
 
-        if ((int)($fileInfoResponse['width'] ?? 0) === 0 && (int)($fileInfoResponse['height'] ?? 0) === 0) {
-            return $configuration;
-        }
+        $graphicalFunctions = GeneralUtility::makeInstance(GraphicalFunctions::class);
+        $sizes = $graphicalFunctions->getImageScale(
+            [
+                0 => $fileInfoResponse['width'] ?? '0', // 0 => width. Don't change array key!
+                1 => $fileInfoResponse['height'] ?? '0' // 1 => height. Don't change array key!
+            ],
+            (string)$configuration['width'], // string to keep "m" and "c" options
+            (string)$configuration['height'], // string to keep "m" and "c" options
+            $options
+        );
 
-        // Remove "m" and "c" and set as new defaults
-        $configuration['height'] = (int)($configuration['height'] ?? $height);
-        $configuration['width'] = (int)($configuration['width'] ?? $width);
-
-        if ($width === 0) {
-            $configuration['width'] = (int)ceil($height / $fileInfoResponse['height'] * $fileInfoResponse['width']);
-            $configuration['height'] = $configuration['height'] ?? $height;
-        } elseif ($height === 0) {
-            $configuration['width'] = $configuration['width'] ?? $width;
-            $configuration['height'] = (int)ceil($width / $fileInfoResponse['width'] * $fileInfoResponse['height']);
-        }
+        $configuration['width'] = (int)($sizes[0] ?? 0);
+        $configuration['height'] = (int)($sizes[1] ?? 0);
 
         return $configuration;
     }
