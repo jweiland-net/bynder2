@@ -7,6 +7,11 @@
 ChangeLog
 =========
 
+**Version 1.0.3**
+
+- Add option to set number of files in file browser
+- Add functional tests
+
 **Version 1.0.0**
 
 - Initial upload
