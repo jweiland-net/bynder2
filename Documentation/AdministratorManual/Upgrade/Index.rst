@@ -1,7 +1,10 @@
 .. include:: ../../Includes.txt
 
-Updating
-========
+
+.. _upgrade:
+
+Upgrade
+=======
 
 If you upgrade EXT:bynder2 to a newer version, please read this section carefully!
 
