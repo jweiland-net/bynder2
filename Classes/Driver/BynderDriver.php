@@ -14,6 +14,7 @@ namespace JWeiland\Bynder2\Driver;
 use Bynder\Api\BynderApiFactory;
 use Bynder\Api\Impl\BynderApi;
 use In2code\Powermail\Utility\StringUtility;
+use JWeiland\Bynder2\Configuration\ExtConf;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -47,6 +48,11 @@ class BynderDriver extends AbstractDriver
     protected $flashMessageService;
 
     /**
+     * @var ExtConf
+     */
+    protected $extConf;
+
+    /**
      * @var FrontendInterface
      */
     protected $cache;
@@ -76,6 +82,7 @@ class BynderDriver extends AbstractDriver
     public function initialize(): void
     {
         $this->flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
+        $this->extConf = GeneralUtility::makeInstance(ExtConf::class);
 
         try {
             $this->cache = GeneralUtility::makeInstance(CacheManager::class)
@@ -499,7 +506,7 @@ class BynderDriver extends AbstractDriver
 
     public function getFileInFolder($fileName, $folderIdentifier): string
     {
-        return $this->canonicalizeAndCheckFileIdentifier($folderIdentifier . '/' . $fileName);
+        return $this->canonicalizeAndCheckFileIdentifier('/' . $fileName);
     }
 
     public function getFilesInFolder(
@@ -511,7 +518,7 @@ class BynderDriver extends AbstractDriver
         $sort = '',
         $sortRev = false
     ): array {
-        $numberOfItems = $numberOfItems ?: 40;
+        $numberOfItems = $numberOfItems ?: $this->extConf->getNumberOfFilesInFileBrowser();
         if ($start < $numberOfItems) {
             $start = 1;
         } else {
