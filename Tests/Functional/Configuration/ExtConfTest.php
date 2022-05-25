@@ -66,7 +66,7 @@ class ExtConfTest extends FunctionalTestCase
      */
     public function getNumberOfFilesInFileBrowserInitiallyReturns100(): void
     {
-        $this->assertSame(
+        self::assertSame(
             100,
             $this->subject->getNumberOfFilesInFileBrowser()
         );
@@ -81,7 +81,7 @@ class ExtConfTest extends FunctionalTestCase
     {
         $this->subject->setNumberOfFilesInFileBrowser($value);
 
-        $this->assertSame(
+        self::assertSame(
             $expected,
             $this->subject->getNumberOfFilesInFileBrowser()
         );
