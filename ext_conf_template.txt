@@ -1,2 +1,4 @@
 # cat=basic; type=int+; label=LLL:EXT:bynder2/Resources/Private/Language/ExtConf.xlf:numberOfFilesInFileBrowser
 numberOfFilesInFileBrowser = 100
+# cat=basic; type=boolean; label=LLL:EXT:bynder2/Resources/Private/Language/ExtConf.xlf:useTransientCache
+useTransientCache = 0

@@ -525,22 +525,22 @@ class BynderDriver extends AbstractDriver
             $start = (int)ceil($start / $numberOfItems) + 1;
         }
 
-        $sort = $sort ?: 'dateModified';
-        $orderBy = [
-            'file' => 'name',
-            'tstamp' => 'dateModified',
-            'size' => 'dateModified',
-            'fileext' => 'dateModified',
-            'rw' => 'dateModified',
-        ];
-
-        $ordering = $sortRev ? 'desc' : 'asc';
+        if ($sort === '' && $sortRev === false) {
+            // Special case for FileBrowser view. The most current files have to be on top.
+            // This will also start indexing of new files.
+            $sortBy = 'dateModified desc';
+        } else {
+            // Bynder can not sort by size, tstamp, fileext and rw. So, use dateModified instead
+            $columnToSortBy = $sort === 'file' ? 'name' : 'dateModified';
+            $ordering = $sortRev ? 'desc' : 'asc';
+            $sortBy = $columnToSortBy . ' ' . $ordering;
+        }
 
         $pageCacheIdentifier = sprintf(
             'page-%d-%d-%s-%s',
             $start,
             $numberOfItems,
-            $orderBy[$sort],
+            $columnToSortBy,
             $ordering
         );
         if ($this->cache->has($pageCacheIdentifier)) {
@@ -549,7 +549,7 @@ class BynderDriver extends AbstractDriver
             $mediaResponse = $this->bynderClient->getAssetBankManager()->getMediaList([
                 'page' => $start,
                 'limit' => $numberOfItems,
-                'orderBy' => $orderBy[$sort] . ' ' . $ordering,
+                'orderBy' => $sortBy,
                 'includeMediaItems' => 1,
                 'isPublic' => 0,
                 'archive' => 0

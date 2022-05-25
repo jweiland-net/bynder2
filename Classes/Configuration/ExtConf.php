@@ -25,6 +25,11 @@ class ExtConf implements SingletonInterface
      */
     protected $numberOfFilesInFileBrowser = 100;
 
+    /**
+     * @var bool
+     */
+    protected $useTransientCache = false;
+
     public function __construct(ExtensionConfiguration $extensionConfiguration)
     {
         $extConf = $extensionConfiguration->get('bynder2');
@@ -52,5 +57,15 @@ class ExtConf implements SingletonInterface
             1000,
             100
         );
+    }
+
+    public function getUseTransientCache(): bool
+    {
+        return $this->useTransientCache;
+    }
+
+    public function setUseTransientCache(string $useTransientCache): void
+    {
+        $this->useTransientCache = (bool)$useTransientCache;
     }
 }

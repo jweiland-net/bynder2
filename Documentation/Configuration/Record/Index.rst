@@ -1,13 +1,11 @@
-.. include:: ../Includes.txt
+﻿.. include:: ../../Includes.txt
 
 
-.. _configuration:
+.. _record:
 
-=============
-Configuration
-=============
-
-This chapter describes the various configuration settings of events2.
+======
+Record
+======
 
 Minimal Example
 ===============
@@ -16,10 +14,3 @@ Minimal Example
 - Choose storage type `fal_bynder`
 - Set credentials for Bynder. Currently only OAuth Apps 1 supported.
 - You will see authentication status after save.
-
-
-.. toctree::
-   :maxdepth: 2
-
-   Record/Index
-   Extension/Index
