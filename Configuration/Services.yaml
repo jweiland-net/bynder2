@@ -7,6 +7,9 @@ services:
   JWeiland\Bynder2\:
     resource: '../Classes/*'
 
+  JWeiland\Bynder2\Configuration\ExtConf:
+    public: true
+
   JWeiland\Bynder2\EventListener\BeforeFileProcessingEventListener:
     tags:
     - name: event.listener
