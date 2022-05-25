@@ -86,4 +86,26 @@ class ExtConfTest extends FunctionalTestCase
             $this->subject->getNumberOfFilesInFileBrowser()
         );
     }
+
+    /**
+     * @test
+     */
+    public function getUseTransientCacheInitiallyReturnsFalse(): void
+    {
+        self::assertFalse(
+            $this->subject->getUseTransientCache()
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function setUseTransientCacheWillSetUseTransientCache(): void
+    {
+        $this->subject->setUseTransientCache('1');
+
+        self::assertTrue(
+            $this->subject->getUseTransientCache()
+        );
+    }
 }

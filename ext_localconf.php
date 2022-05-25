@@ -15,14 +15,20 @@ call_user_func(static function (): void {
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1653038580] = [
         'nodeName' => 'bynderStatus',
         'priority' => '70',
-        'class' => \JWeiland\Bynder2\Form\Element\BynderStatusElement::class
+        'class' => \JWeiland\Bynder2\Form\Element\BynderStatusElement::class,
     ];
 
-    // Cache for file information
-    // As long as Bynder storage is configured read-only we can use DB instead of transient cache.
-    // Cache will be cleared while CLI or scheduler Task
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bynder2']['backend']
-        = \TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend::class;
+    // Create cache for file information
+    $extConf = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
+        \JWeiland\Bynder2\Configuration\ExtConf::class
+    );
+    if ($extConf->getUseTransientCache()) {
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bynder2']['backend']
+            = \TYPO3\CMS\Core\Cache\Backend\TransientMemoryBackend::class;
+    } else {
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bynder2']['backend']
+            = \TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend::class;
+    }
 
     // Remove document view in extended view of FileList
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Filelist\FileList::class]['className']
