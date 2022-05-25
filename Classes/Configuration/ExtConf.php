@@ -13,6 +13,7 @@ namespace JWeiland\Bynder2\Configuration;
 
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\SingletonInterface;
+use TYPO3\CMS\Core\Utility\MathUtility;
 
 /*
  * This class streamlines all settings from extension manager
@@ -45,6 +46,11 @@ class ExtConf implements SingletonInterface
 
     public function setNumberOfFilesInFileBrowser(string $numberOfFilesInFileBrowser): void
     {
-        $this->numberOfFilesInFileBrowser = (int)$numberOfFilesInFileBrowser;
+        $this->numberOfFilesInFileBrowser = MathUtility::forceIntegerInRange(
+            (int)$numberOfFilesInFileBrowser,
+            1,
+            1000,
+            100
+        );
     }
 }
