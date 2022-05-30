@@ -7,6 +7,10 @@
 ChangeLog
 =========
 
+**Version 1.0.5**
+
+- Use 2 caches to differ between pagenav and fileinfo cache
+
 **Version 1.0.4**
 
 - Add option to use transient cache to retrieve most current files
