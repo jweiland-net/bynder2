@@ -293,9 +293,13 @@ class BynderDriver extends AbstractDriver
     public function deleteFile($fileIdentifier): bool
     {
         try {
-            $this->bynderClient->delete($fileIdentifier);
+            $this->bynderClient->getAssetBankManager()->deleteMedia($fileIdentifier);
+
             return true;
         } catch (\Exception $e) {
+            $this->addFlashMessage(
+                'File with identifier ' . $fileIdentifier . ' could not be deleted'
+            );
         }
 
         return false;
@@ -323,15 +327,8 @@ class BynderDriver extends AbstractDriver
 
     public function moveFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $newFileName): string
     {
-        $fileIdentifier = $this->canonicalizeAndCheckFileIdentifier($fileIdentifier);
-        $targetFileIdentifier = $this->canonicalizeAndCheckFileIdentifier($targetFolderIdentifier . '/' . $newFileName);
-
-        // Bynder don't like slashes at the end of identifier
-        $this->bynderClient->move($fileIdentifier, $targetFileIdentifier);
-
-        $this->cache->flush();
-
-        return $targetFileIdentifier;
+        // Bynder works with just ONE folder, so files can't be moved.
+        return $fileIdentifier;
     }
 
     public function moveFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName): array
@@ -348,7 +345,12 @@ class BynderDriver extends AbstractDriver
 
     public function getFileContents($fileIdentifier): string
     {
-        return stream_get_contents($this->bynderClient->download($fileIdentifier));
+        $remoteFileResponse = $this->getMediaDownloadResponse($fileIdentifier);
+        if ($remoteFileResponse !== []) {
+            return file_get_contents($remoteFileResponse['s3_file']);
+        }
+
+        return '';
     }
 
     public function setFileContents($fileIdentifier, $contents): int
@@ -546,6 +548,7 @@ class BynderDriver extends AbstractDriver
         if ($this->cache->has($pageCacheIdentifier)) {
             $files = $this->cache->get($pageCacheIdentifier);
         } else {
+            $options =
             $mediaResponse = $this->bynderClient->getAssetBankManager()->getMediaList([
                 'page' => $start,
                 'limit' => $numberOfItems,
