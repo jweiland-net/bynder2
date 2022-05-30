@@ -18,17 +18,21 @@ call_user_func(static function (): void {
         'class' => \JWeiland\Bynder2\Form\Element\BynderStatusElement::class,
     ];
 
-    // Create cache for file information
+    // Create cache to speed up page navigation through the files
     $extConf = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
         \JWeiland\Bynder2\Configuration\ExtConf::class
     );
     if ($extConf->getUseTransientCache()) {
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bynder2']['backend']
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bynder2_pagenav']['backend']
             = \TYPO3\CMS\Core\Cache\Backend\TransientMemoryBackend::class;
     } else {
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bynder2']['backend']
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bynder2_pagenav']['backend']
             = \TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend::class;
     }
+
+    // Create cache to store the file information retrieved from Bynder API
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bynder2_fileinfo']['backend']
+        = \TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend::class;
 
     // Remove document view in extended view of FileList
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Filelist\FileList::class]['className']

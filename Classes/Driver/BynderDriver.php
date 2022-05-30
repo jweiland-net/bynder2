@@ -55,7 +55,12 @@ class BynderDriver extends AbstractDriver
     /**
      * @var FrontendInterface
      */
-    protected $cache;
+    protected $pageNavCache;
+
+    /**
+     * @var FrontendInterface
+     */
+    protected $fileInfoCache;
 
     /**
      * @var BynderApi|null
@@ -66,13 +71,6 @@ class BynderDriver extends AbstractDriver
      * @var array
      */
     protected $settings = [];
-
-    /**
-     * A list of all supported hash algorithms, written all lower case.
-     *
-     * @var array
-     */
-    protected $supportedHashAlgorithms = ['sha1', 'md5'];
 
     public function processConfiguration(): void
     {
@@ -85,8 +83,10 @@ class BynderDriver extends AbstractDriver
         $this->extConf = GeneralUtility::makeInstance(ExtConf::class);
 
         try {
-            $this->cache = GeneralUtility::makeInstance(CacheManager::class)
-                ->getCache('bynder2');
+            $this->pageNavCache = GeneralUtility::makeInstance(CacheManager::class)
+                ->getCache('bynder2_pagenav');
+            $this->fileInfoCache = GeneralUtility::makeInstance(CacheManager::class)
+                ->getCache('bynder2_fileinfo');
         } catch (NoSuchCacheException $noSuchCacheException) {
             $this->addFlashMessage(
                 'Cache for file information of bynder files could not be created. Please check cache configuration of DB tables',
@@ -109,7 +109,7 @@ class BynderDriver extends AbstractDriver
                     'consumerSecret' => $this->configuration['consumer_secret'],
                     'token' => $this->configuration['token_key'],
                     'tokenSecret' => $this->configuration['token_secret'],
-                    'baseUrl' => $this->configuration['url']
+                    'baseUrl' => $this->configuration['url'],
                 ]
             );
         }
@@ -182,7 +182,7 @@ class BynderDriver extends AbstractDriver
 
         // Early, if file is in cache
         $fileCacheIdentifier = $this->getFileCacheIdentifier($fileIdentifier);
-        if ($this->cache->has($fileCacheIdentifier)) {
+        if ($this->fileInfoCache->has($fileCacheIdentifier)) {
             return true;
         }
 
@@ -220,7 +220,7 @@ class BynderDriver extends AbstractDriver
             unlink($localFilePath);
         }
 
-        $this->cache->flush();
+        $this->fileInfoCache->flush();
 
         return $newFileIdentifier;
     }
@@ -237,21 +237,15 @@ class BynderDriver extends AbstractDriver
             ''
         );
 
-        $this->cache->flush();
+        $this->fileInfoCache->flush();
 
         return $fileIdentifier;
     }
 
     public function copyFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $fileName): string
     {
-        $fileIdentifier = $this->canonicalizeAndCheckFileIdentifier($fileIdentifier);
-        $targetFileIdentifier = $this->canonicalizeAndCheckFileIdentifier($targetFolderIdentifier . '/' . $fileName);
-
-        // Bynder don't like slashes at the end of identifier
-        $this->bynderClient->copy($fileIdentifier, $targetFileIdentifier);
-        $this->cache->flush();
-
-        return $targetFileIdentifier;
+        // Bynder works with just ONE folder. So, there is no need to copy file within the same folder.
+        return $fileIdentifier;
     }
 
     public function renameFile($fileIdentifier, $newName): string
@@ -264,7 +258,7 @@ class BynderDriver extends AbstractDriver
 
         $this->bynderClient->move($fileIdentifier, $targetIdentifier);
 
-        $this->cache->flush();
+        $this->fileInfoCache->flush();
 
         return $targetIdentifier;
     }
@@ -281,7 +275,7 @@ class BynderDriver extends AbstractDriver
                 $parts = GeneralUtility::split_fileref($localFilePath);
                 $this->renameFile($fileIdentifier, $parts['info']);
             }
-            $this->cache->flush();
+            $this->fileInfoCache->flush();
 
             return true;
         } catch (\Exception $e) {
@@ -307,22 +301,8 @@ class BynderDriver extends AbstractDriver
 
     public function hash($fileIdentifier, $hashAlgorithm): string
     {
-        if (!in_array($hashAlgorithm, $this->supportedHashAlgorithms, true)) {
-            throw new \InvalidArgumentException('Hash algorithm "' . $hashAlgorithm . '" is not supported.', 1304964032);
-        }
-
-        switch ($hashAlgorithm) {
-            case 'sha1':
-                $hash = sha1($fileIdentifier);
-                break;
-            case 'md5':
-                $hash = md5($fileIdentifier);
-                break;
-            default:
-                throw new \RuntimeException('Hash algorithm ' . $hashAlgorithm . ' is not implemented.', 1329644451);
-        }
-
-        return $hash;
+        // All core calls were done with sha1. No need to check any other $hashAlgorithm
+        return sha1($fileIdentifier);
     }
 
     public function moveFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $newFileName): string
@@ -361,16 +341,14 @@ class BynderDriver extends AbstractDriver
             'overwrite'
         );
 
-        $this->cache->flush();
+        $this->fileInfoCache->flush();
 
         return (int)$response['size'];
     }
 
     public function fileExistsInFolder($fileName, $folderIdentifier): bool
     {
-        $fileIdentifier = $folderIdentifier . $fileName;
-
-        return $this->fileExists($fileIdentifier);
+        return $this->fileExists($folderIdentifier . $fileName);
     }
 
     public function folderExistsInFolder($folderName, $folderIdentifier): bool
@@ -388,14 +366,14 @@ class BynderDriver extends AbstractDriver
     {
         // Currently, only READ permission is implemented
         return [
-            'r' => true
+            'r' => true,
         ];
     }
 
     public function dumpFileContents($identifier): void
     {
         $handle = fopen('php://output', 'wb');
-        fwrite($handle, stream_get_contents($this->bynderClient->download($identifier)));
+        fwrite($handle, $this->getFileContents($identifier));
         fclose($handle);
     }
 
@@ -418,15 +396,24 @@ class BynderDriver extends AbstractDriver
                 'identifier' => '/',
                 'identifier_hash' => $this->hashIdentifier('/'),
                 'storage' => (string)$this->storageUid,
-                'folder_hash' => $this->hashIdentifier('/')
+                'folder_hash' => $this->hashIdentifier('/'),
             ];
         }
 
         $fileInfoResponse = $this->getFileInfoResponse($fileIdentifier);
         if (empty($propertiesToExtract)) {
             $propertiesToExtract = [
-                'size', 'extension', 'atime', 'mtime', 'ctime', 'mimetype', 'name',
-                'identifier', 'identifier_hash', 'storage', 'folder_hash'
+                'size',
+                'extension',
+                'atime',
+                'mtime',
+                'ctime',
+                'mimetype',
+                'name',
+                'identifier',
+                'identifier_hash',
+                'storage',
+                'folder_hash',
             ];
         }
 
@@ -488,6 +475,8 @@ class BynderDriver extends AbstractDriver
                 return (string)($fileInfoResponse['copyright'] ?? '');
             case 'keywords':
                 return implode(', ', $fileInfoResponse['tags'] ?? []);
+            case 'bynder_thumbnails':
+                return serialize($fileInfoResponse['thumbnails'] ?? []);
             default:
                 if (isset($fileInfoResponse[$property])) {
                     return $fileInfoResponse[$property];
@@ -502,7 +491,7 @@ class BynderDriver extends AbstractDriver
         return [
             'identifier' => '/',
             'name' => 'Bynder Root Folder',
-            'storage' => $this->storageUid
+            'storage' => $this->storageUid,
         ];
     }
 
@@ -527,15 +516,15 @@ class BynderDriver extends AbstractDriver
             $start = (int)ceil($start / $numberOfItems) + 1;
         }
 
+        // Bynder can not sort by size, tstamp, fileext and rw. So, use dateModified instead
+        $columnToSortBy = $sort === 'file' ? 'name' : 'dateModified';
+        $ordering = $sortRev ? 'desc' : 'asc';
+        $sortBy = $columnToSortBy . ' ' . $ordering;
+
+        // Special case for FileBrowser view. The most current files have to be on top.
+        // This will also start indexing of new files.
         if ($sort === '' && $sortRev === false) {
-            // Special case for FileBrowser view. The most current files have to be on top.
-            // This will also start indexing of new files.
             $sortBy = 'dateModified desc';
-        } else {
-            // Bynder can not sort by size, tstamp, fileext and rw. So, use dateModified instead
-            $columnToSortBy = $sort === 'file' ? 'name' : 'dateModified';
-            $ordering = $sortRev ? 'desc' : 'asc';
-            $sortBy = $columnToSortBy . ' ' . $ordering;
         }
 
         $pageCacheIdentifier = sprintf(
@@ -545,26 +534,25 @@ class BynderDriver extends AbstractDriver
             $columnToSortBy,
             $ordering
         );
-        if ($this->cache->has($pageCacheIdentifier)) {
-            $files = $this->cache->get($pageCacheIdentifier);
+        if ($this->pageNavCache->has($pageCacheIdentifier)) {
+            $files = $this->pageNavCache->get($pageCacheIdentifier);
         } else {
-            $options =
             $mediaResponse = $this->bynderClient->getAssetBankManager()->getMediaList([
                 'page' => $start,
                 'limit' => $numberOfItems,
                 'orderBy' => $sortBy,
                 'includeMediaItems' => 1,
                 'isPublic' => 0,
-                'archive' => 0
+                'archive' => 0,
             ])->wait();
 
             $files = [];
             foreach ($mediaResponse as $mediaFile) {
                 $files[] = $mediaFile['id'];
-                $this->cache->set($this->getFileCacheIdentifier($mediaFile['id']), $mediaFile);
+                $this->fileInfoCache->set($this->getFileCacheIdentifier($mediaFile['id']), $mediaFile);
             }
 
-            $this->cache->set($pageCacheIdentifier, $files);
+            $this->pageNavCache->set($pageCacheIdentifier, $files);
         }
 
         return $files;
@@ -745,13 +733,13 @@ class BynderDriver extends AbstractDriver
     public function getFileInfoResponse(string $fileIdentifier): array
     {
         $fileCacheIdentifier = $this->getFileCacheIdentifier($fileIdentifier);
-        if ($this->cache->has($fileCacheIdentifier)) {
-            $fileInfoResponse = $this->cache->get($fileCacheIdentifier);
+        if ($this->fileInfoCache->has($fileCacheIdentifier)) {
+            $fileInfoResponse = $this->fileInfoCache->get($fileCacheIdentifier);
         } else {
             $fileInfoResponse = $this->bynderClient->getAssetBankManager()->getMediaList([
                 'id' => $fileIdentifier
             ])->wait();
-            $this->cache->set($fileCacheIdentifier, $fileInfoResponse);
+            $this->fileInfoCache->set($fileCacheIdentifier, $fileInfoResponse);
         }
 
         return is_array($fileInfoResponse) ? $fileInfoResponse : [];
