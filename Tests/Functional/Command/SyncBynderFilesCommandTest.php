@@ -83,7 +83,11 @@ class SyncBynderFilesCommandTest extends FunctionalTestCase
         /** @var CacheManager|ObjectProphecy $cacheManager */
         $cacheManager = $this->prophesize(CacheManager::class);
         $cacheManager
-            ->getCache('bynder2')
+            ->getCache('bynder2_pagenav')
+            ->shouldBeCalled()
+            ->willReturn($cache->reveal());
+        $cacheManager
+            ->getCache('bynder2_fileinfo')
             ->shouldBeCalled()
             ->willReturn($cache->reveal());
 
