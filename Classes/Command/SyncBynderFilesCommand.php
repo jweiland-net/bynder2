@@ -60,8 +60,12 @@ class SyncBynderFilesCommand extends Command
     protected function clearCache(): void
     {
         try {
-            $cache = GeneralUtility::makeInstance(CacheManager::class)->getCache('bynder2');
-            $cache->flush();
+            GeneralUtility::makeInstance(CacheManager::class)
+                ->getCache('bynder2_pagenav')
+                ->flush();
+            GeneralUtility::makeInstance(CacheManager::class)
+                ->getCache('bynder2_fileinfo')
+                ->flush();
         } catch (NoSuchCacheException $noSuchCacheException) {
             $this->output->writeln('Cache bynder2 not found. Please check your cache configuration or DB tables.');
         }

@@ -7,6 +7,10 @@
 ChangeLog
 =========
 
+**Version 1.0.6**
+
+- Clear the two new caches in sync command
+
 **Version 1.0.5**
 
 - Use 2 caches to differ between pagenav and fileinfo cache
