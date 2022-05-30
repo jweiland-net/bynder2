@@ -475,8 +475,6 @@ class BynderDriver extends AbstractDriver
                 return (string)($fileInfoResponse['copyright'] ?? '');
             case 'keywords':
                 return implode(', ', $fileInfoResponse['tags'] ?? []);
-            case 'bynder_thumbnails':
-                return serialize($fileInfoResponse['thumbnails'] ?? []);
             default:
                 if (isset($fileInfoResponse[$property])) {
                     return $fileInfoResponse[$property];
