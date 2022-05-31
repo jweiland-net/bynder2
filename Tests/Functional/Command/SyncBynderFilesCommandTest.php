@@ -23,11 +23,12 @@ use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
 use TYPO3\CMS\Core\Resource\Folder;
+use TYPO3\CMS\Core\Resource\Index\Indexer;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Resource\StorageRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-/**
+/*
  * Test case.
  */
 class SyncBynderFilesCommandTest extends FunctionalTestCase
@@ -151,14 +152,6 @@ class SyncBynderFilesCommandTest extends FunctionalTestCase
             ->shouldBeCalled()
             ->willReturn($folder);
         $resourceStorageProphecy
-            ->getFilesInFolder($folder, 0, 200)
-            ->shouldBeCalled()
-            ->willReturn([0 => 'some data']);
-        $resourceStorageProphecy
-            ->getFilesInFolder($folder, 200, 200)
-            ->shouldBeCalled()
-            ->willReturn([]);
-        $resourceStorageProphecy
             ->countFilesInFolder($folder)
             ->shouldBeCalled()
             ->willReturn(12);
@@ -173,6 +166,13 @@ class SyncBynderFilesCommandTest extends FunctionalTestCase
             ->willReturn([
                 0 => $resourceStorageProphecy->reveal(),
             ]);
+
+        /** @var Indexer|ObjectProphecy $indexer */
+        $indexer = $this->prophesize(Indexer::class);
+        $indexer
+            ->processChangesInStorages()
+            ->shouldBeCalled();
+        GeneralUtility::addInstance(Indexer::class, $indexer->reveal());
 
         self::assertSame(
             0,

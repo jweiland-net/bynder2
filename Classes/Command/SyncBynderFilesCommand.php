@@ -17,6 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Resource\Exception\InsufficientFolderAccessPermissionsException;
+use TYPO3\CMS\Core\Resource\Index\Indexer;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Resource\StorageRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -93,16 +94,11 @@ class SyncBynderFilesCommand extends Command
 
     protected function synchronizeStorage(ResourceStorage $storage): void
     {
-        $start = 0;
-        $maxNumberOfItems = 200;
-        $folder = $storage->getRootLevelFolder();
-        try {
-            while ($storage->getFilesInFolder($folder, $start, $maxNumberOfItems) !== []) {
-                $start += $maxNumberOfItems;
-            }
-        } catch (InsufficientFolderAccessPermissionsException $insufficientFolderAccessPermissionsException) {
-            $this->output->writeln('CLI user does not have permission to access bynder storage');
-        }
+        // This will retrieve ALL files from Bynder API
+        // The fileInfo caches will be updated
+        // Detect changes in storage
+        // Check and mark missing files
+        $this->getIndexer($storage)->processChangesInStorages();
     }
 
     protected function countFilesInStorage(ResourceStorage $storage): int
@@ -124,5 +120,10 @@ class SyncBynderFilesCommand extends Command
         $storageRepository = GeneralUtility::makeInstance(StorageRepository::class);
 
         return $storageRepository->findByStorageType('bynder2');
+    }
+
+    protected function getIndexer(ResourceStorage $storage): Indexer
+    {
+        return GeneralUtility::makeInstance(Indexer::class, $storage);
     }
 }

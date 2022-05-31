@@ -11,10 +11,10 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Driver;
 
-use Bynder\Api\BynderApiFactory;
-use Bynder\Api\Impl\BynderApi;
 use In2code\Powermail\Utility\StringUtility;
-use JWeiland\Bynder2\Configuration\ExtConf;
+use JWeiland\Bynder2\Service\BynderService;
+use JWeiland\Bynder2\Service\Exception\InvalidBynderConfigurationException;
+use JWeiland\Bynder2\Utility\OrderingUtility;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -32,7 +32,7 @@ use TYPO3\CMS\Core\Resource\ResourceStorageInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 
-/**
+/*
  * Class which contains all methods to arrange files and folders
  */
 class BynderDriver extends AbstractDriver
@@ -48,11 +48,6 @@ class BynderDriver extends AbstractDriver
     protected $flashMessageService;
 
     /**
-     * @var ExtConf
-     */
-    protected $extConf;
-
-    /**
      * @var FrontendInterface
      */
     protected $pageNavCache;
@@ -63,14 +58,31 @@ class BynderDriver extends AbstractDriver
     protected $fileInfoCache;
 
     /**
-     * @var BynderApi|null
+     * @var BynderService|null
      */
-    protected $bynderClient;
+    protected $bynderService;
 
     /**
      * @var array
      */
     protected $settings = [];
+
+    /**
+     * @var string[]
+     */
+    protected $defaultPropertiesToExtract = [
+        'size',
+        'extension',
+        'atime',
+        'mtime',
+        'ctime',
+        'mimetype',
+        'name',
+        'identifier',
+        'identifier_hash',
+        'storage',
+        'folder_hash',
+    ];
 
     public function processConfiguration(): void
     {
@@ -80,7 +92,6 @@ class BynderDriver extends AbstractDriver
     public function initialize(): void
     {
         $this->flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
-        $this->extConf = GeneralUtility::makeInstance(ExtConf::class);
 
         try {
             $this->pageNavCache = GeneralUtility::makeInstance(CacheManager::class)
@@ -95,22 +106,13 @@ class BynderDriver extends AbstractDriver
             );
         }
 
-        if (
-            isset(
-                $this->configuration['consumer_key'],
-                $this->configuration['consumer_secret'],
-                $this->configuration['token_key'],
-                $this->configuration['token_secret']
-            )
-        ) {
-            $this->bynderClient = BynderApiFactory::create(
-                [
-                    'consumerKey' => $this->configuration['consumer_key'],
-                    'consumerSecret' => $this->configuration['consumer_secret'],
-                    'token' => $this->configuration['token_key'],
-                    'tokenSecret' => $this->configuration['token_secret'],
-                    'baseUrl' => $this->configuration['url'],
-                ]
+        try {
+            $this->bynderService = GeneralUtility::makeInstance(BynderService::class, $this->configuration);
+        } catch (InvalidBynderConfigurationException $invalidBynderConfigurationException) {
+            $this->addFlashMessage(
+                $invalidBynderConfigurationException->getMessage(),
+                'Bynder configuration error',
+                AbstractMessage::ERROR
             );
         }
     }
@@ -175,22 +177,31 @@ class BynderDriver extends AbstractDriver
 
     public function fileExists($fileIdentifier): bool
     {
+        static $fileExistsCache = [];
+
         // Early return for root folder "/"
         if ($fileIdentifier === '/') {
             return true;
         }
 
-        // Early, if file is in cache
         $fileCacheIdentifier = $this->getFileCacheIdentifier($fileIdentifier);
+
+        // Early return, if information is in local cache
+        if (array_key_exists($fileCacheIdentifier, $fileExistsCache)) {
+            return $fileExistsCache[$fileCacheIdentifier];
+        }
+
+        // Early return, if information is in Caching Framework
         if ($this->fileInfoCache->has($fileCacheIdentifier)) {
+            $fileExistsCache[$fileCacheIdentifier] = true;
             return true;
         }
 
-        $mediaAvailableResponse = $this->bynderClient->getAssetBankManager()->getMediaInfo(
-            $fileIdentifier
-        )->wait();
+        $fileInformation = $this->bynderService->getFile($fileIdentifier);
+        $this->fileInfoCache->set($fileCacheIdentifier, $fileInformation);
+        $fileExistsCache[$fileCacheIdentifier] = (bool)$fileInformation;
 
-        return ($mediaAvailableResponse['statuscode'] ?? '200') === '200';
+        return (bool)$fileInformation;
     }
 
     public function folderExists($folderIdentifier): bool
@@ -207,39 +218,14 @@ class BynderDriver extends AbstractDriver
 
     public function addFile($localFilePath, $targetFolderIdentifier, $newFileName = '', $removeOriginal = true): string
     {
-        $localFilePath = $this->canonicalizeAndCheckFilePath($localFilePath);
-        $newFileIdentifier = $this->canonicalizeAndCheckFolderIdentifier($targetFolderIdentifier) . $newFileName;
-
-        $this->bynderClient->upload(
-            $newFileIdentifier,
-            file_get_contents($localFilePath),
-            'overwrite'
-        );
-
-        if ($removeOriginal) {
-            unlink($localFilePath);
-        }
-
-        $this->fileInfoCache->flush();
-
-        return $newFileIdentifier;
+        // @ToDo: To be implemented
+        return '';
     }
 
     public function createFile($fileName, $parentFolderIdentifier): string
     {
-        $parentFolderIdentifier = $this->canonicalizeAndCheckFolderIdentifier($parentFolderIdentifier);
-        $fileIdentifier =  $this->canonicalizeAndCheckFileIdentifier(
-            $parentFolderIdentifier . $this->sanitizeFileName(ltrim($fileName, '/'))
-        );
-
-        $this->bynderClient->upload(
-            $fileIdentifier,
-            ''
-        );
-
-        $this->fileInfoCache->flush();
-
-        return $fileIdentifier;
+        // @ToDo: To be implemented
+        return '';
     }
 
     public function copyFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $fileName): string
@@ -250,52 +236,19 @@ class BynderDriver extends AbstractDriver
 
     public function renameFile($fileIdentifier, $newName): string
     {
-        $fileIdentifier = $this->canonicalizeAndCheckFileIdentifier($fileIdentifier);
-        $newName = $this->sanitizeFileName($newName);
-
-        $targetIdentifier = PathUtility::dirname($fileIdentifier) . '/' . $newName;
-        $targetIdentifier = $this->canonicalizeAndCheckFileIdentifier($targetIdentifier);
-
-        $this->bynderClient->move($fileIdentifier, $targetIdentifier);
-
-        $this->fileInfoCache->flush();
-
-        return $targetIdentifier;
+        // @ToDo: To be implemented
+        return '';
     }
 
     public function replaceFile($fileIdentifier, $localFilePath): bool
     {
-        try {
-            if (is_uploaded_file($localFilePath)) {
-                $this->setFileContents(
-                    $fileIdentifier,
-                    file_get_contents($localFilePath)
-                );
-            } else {
-                $parts = GeneralUtility::split_fileref($localFilePath);
-                $this->renameFile($fileIdentifier, $parts['info']);
-            }
-            $this->fileInfoCache->flush();
-
-            return true;
-        } catch (\Exception $e) {
-        }
-
+        // @ToDo: To be implemented
         return false;
     }
 
     public function deleteFile($fileIdentifier): bool
     {
-        try {
-            $this->bynderClient->getAssetBankManager()->deleteMedia($fileIdentifier);
-
-            return true;
-        } catch (\Exception $e) {
-            $this->addFlashMessage(
-                'File with identifier ' . $fileIdentifier . ' could not be deleted'
-            );
-        }
-
+        // @ToDo: To be implemented
         return false;
     }
 
@@ -325,9 +278,8 @@ class BynderDriver extends AbstractDriver
 
     public function getFileContents($fileIdentifier): string
     {
-        $remoteFileResponse = $this->getMediaDownloadResponse($fileIdentifier);
-        if ($remoteFileResponse !== []) {
-            return file_get_contents($remoteFileResponse['s3_file']);
+        if ($cdnDownloadUrl = $this->bynderService->getCdnDownloadUrl($fileIdentifier)) {
+            return file_get_contents($cdnDownloadUrl);
         }
 
         return '';
@@ -335,19 +287,13 @@ class BynderDriver extends AbstractDriver
 
     public function setFileContents($fileIdentifier, $contents): int
     {
-        $response = $this->bynderClient->upload(
-            $fileIdentifier,
-            $contents,
-            'overwrite'
-        );
-
-        $this->fileInfoCache->flush();
-
-        return (int)$response['size'];
+        // @ToDo: To be implemented
+        return 0;
     }
 
     public function fileExistsInFolder($fileName, $folderIdentifier): bool
     {
+        \TYPO3\CMS\Core\Utility\DebugUtility::debug($fileName, 'fileExistsInFolder was called with fileName: ' . $fileName);
         return $this->fileExists($folderIdentifier . $fileName);
     }
 
@@ -400,29 +346,25 @@ class BynderDriver extends AbstractDriver
             ];
         }
 
-        $fileInfoResponse = $this->getFileInfoResponse($fileIdentifier);
-        if (empty($propertiesToExtract)) {
-            $propertiesToExtract = [
-                'size',
-                'extension',
-                'atime',
-                'mtime',
-                'ctime',
-                'mimetype',
-                'name',
-                'identifier',
-                'identifier_hash',
-                'storage',
-                'folder_hash',
-            ];
+        $fileCacheIdentifier = $this->getFileCacheIdentifier($fileIdentifier);
+        if ($this->fileInfoCache->has($fileCacheIdentifier)) {
+            $fileInformation = $this->fileInfoCache->get($fileCacheIdentifier);
+        } else {
+            $fileInformation = $this->bynderService->getFile($fileIdentifier);
         }
 
-        $fileInformation = [];
-        foreach ($propertiesToExtract as $property) {
-            $fileInformation[$property] = $this->getSpecificFileInformation($fileInfoResponse, $property);
+        $properties = [];
+        if ($fileInformation !== []) {
+            if ($propertiesToExtract === []) {
+                $propertiesToExtract = $this->defaultPropertiesToExtract;
+            }
+
+            foreach ($propertiesToExtract as $property) {
+                $properties[$property] = $this->getSpecificFileInformation($fileInformation, $property);
+            }
         }
 
-        return $fileInformation;
+        return $properties;
     }
 
     public function getSpecificFileInformation($fileInfoResponse, $property): string
@@ -507,53 +449,21 @@ class BynderDriver extends AbstractDriver
         $sort = '',
         $sortRev = false
     ): array {
-        $numberOfItems = $numberOfItems ?: $this->extConf->getNumberOfFilesInFileBrowser();
-        if ($start < $numberOfItems) {
-            $start = 1;
-        } else {
-            $start = (int)ceil($start / $numberOfItems) + 1;
-        }
-
-        // Bynder can not sort by size, tstamp, fileext and rw. So, use dateModified instead
-        $columnToSortBy = $sort === 'file' ? 'name' : 'dateModified';
-        $ordering = $sortRev ? 'desc' : 'asc';
-        $sortBy = $columnToSortBy . ' ' . $ordering;
-
-        // Special case for FileBrowser view. The most current files have to be on top.
-        // This will also start indexing of new files.
-        if ($sort === '' && $sortRev === false) {
-            $sortBy = 'dateModified desc';
-        }
-
-        $pageCacheIdentifier = sprintf(
-            'page-%d-%d-%s-%s',
-            $start,
-            $numberOfItems,
-            $columnToSortBy,
-            $ordering
-        );
+        $fileIdentifiers = [];
+        $orderBy = OrderingUtility::getOrdering($sort, $sortRev);
+        $pageCacheIdentifier = $this->getPageNavCacheIdentifier($start, $numberOfItems, $orderBy);
         if ($this->pageNavCache->has($pageCacheIdentifier)) {
-            $files = $this->pageNavCache->get($pageCacheIdentifier);
+            $fileIdentifiers = $this->pageNavCache->get($pageCacheIdentifier);
         } else {
-            $mediaResponse = $this->bynderClient->getAssetBankManager()->getMediaList([
-                'page' => $start,
-                'limit' => $numberOfItems,
-                'orderBy' => $sortBy,
-                'includeMediaItems' => 1,
-                'isPublic' => 0,
-                'archive' => 0,
-            ])->wait();
-
-            $files = [];
-            foreach ($mediaResponse as $mediaFile) {
-                $files[] = $mediaFile['id'];
-                $this->fileInfoCache->set($this->getFileCacheIdentifier($mediaFile['id']), $mediaFile);
+            foreach ($this->bynderService->getFiles($start, $numberOfItems, $orderBy) as $file) {
+                $fileIdentifiers[] = $file['id'];
+                $this->fileInfoCache->set($this->getFileCacheIdentifier($file['id']), $file);
             }
 
-            $this->pageNavCache->set($pageCacheIdentifier, $files);
+            $this->pageNavCache->set($pageCacheIdentifier, $fileIdentifiers);
         }
 
-        return $files;
+        return $fileIdentifiers;
     }
 
     public function getFolderInFolder($folderName, $folderIdentifier): string
@@ -577,20 +487,21 @@ class BynderDriver extends AbstractDriver
 
     public function countFilesInFolder($folderIdentifier, $recursive = false, array $filenameFilterCallbacks = []): int
     {
-        $mediaUsage = $this->bynderClient->getAssetBankManager()->getMediaList([
-            'count' => 0,
-            'limit' => 0,
-            'total' => 1,
-            'includeMediaItems' => 0,
-            'isPublic' => 0,
-            'archive' => 0
-        ])->wait();
+        static $amountOfFiles = null;
 
-        return $mediaUsage['total']['count'] ?? 0;
+        // Bynder does not work folder based. So just return the amount of all files.
+        if ($amountOfFiles === null) {
+            $amountOfFiles = $this->bynderService->countFiles();
+        }
+
+        return $amountOfFiles;
     }
 
-    public function countFoldersInFolder($folderIdentifier, $recursive = false, array $folderNameFilterCallbacks = []): int
-    {
+    public function countFoldersInFolder(
+        $folderIdentifier,
+        $recursive = false,
+        array $folderNameFilterCallbacks = []
+    ): int {
         // Bynder does not work folder based. So just return 0.
         return 0;
     }
@@ -638,7 +549,7 @@ class BynderDriver extends AbstractDriver
      */
     public function resourceExists(string $identifier): bool
     {
-        // As Bynder does not work with folders, we don't need to check for any subfolder identifiers
+        // As Bynder does not work with folders, we don't need to check for any sub-folder identifiers
         if ($identifier === '') {
             throw new \InvalidArgumentException('Resource path cannot be empty');
         }
@@ -656,20 +567,10 @@ class BynderDriver extends AbstractDriver
     protected function copyFileToTemporaryPath(string $fileIdentifier): string
     {
         $temporaryPath = $this->getTemporaryPathForFile($fileIdentifier);
-        $remoteFileResponse = $this->getMediaDownloadResponse($fileIdentifier);
-        if ($remoteFileResponse !== []) {
-            file_put_contents(
-                $temporaryPath,
-                file_get_contents($remoteFileResponse['s3_file'])
-            );
-        } else {
-            $this->addFlashMessage(
-                'The file meta extraction has been interrupted, because file has been removed in the meanwhile.',
-                'File Meta Extraction aborted',
-                AbstractMessage::INFO
-            );
-            return '';
-        }
+        file_put_contents(
+            $temporaryPath,
+            $this->getFileContents($fileIdentifier)
+        );
 
         return $temporaryPath;
     }
@@ -678,7 +579,7 @@ class BynderDriver extends AbstractDriver
      * We have to override TYPO3's version of this method, as Bynder identifiers do not have an appended
      * file extension.
      */
-    protected function getTemporaryPathForFile($fileIdentifier)
+    protected function getTemporaryPathForFile($fileIdentifier): string
     {
         // Fallback to "jpg". FAL needs an extension, else img processing will not work
         $fileExtension = $this->getFileInfoByIdentifier($fileIdentifier, ['extension'])['extension'] ?? 'jpg';
@@ -695,22 +596,27 @@ class BynderDriver extends AbstractDriver
      *
      * Must be public as it was used by our EventListeners
      */
-    public function getProcessingUrl(FileInterface $file, array $configuration, array $fileInfoResponse = []): string
+    public function getProcessingUrl(FileInterface $file, array $configuration, array $fileInformation = []): string
     {
-        // Please try to assign $fileInfoResponse to prevent multiple API calls
-        if ($fileInfoResponse === []) {
-            $fileInfoResponse = $this->getFileInfoResponse($file->getIdentifier());
+        // Please try to assign $fileInformation to prevent multiple API calls
+        if ($fileInformation === []) {
+            $fileInformation = $this->bynderService->getFile($file->getIdentifier());
+
+            // If still empty, an exception was thrown. File not found. Use fallback.
+            if ($fileInformation === []) {
+                return 'EXT:bynder/Resources/Public/Icons/ImageUnavailable.svg';
+            }
         }
 
         // If cropping was not configured, we can return CDN URIs
         $processingUrl = '';
         if (!$this->hasCroppingConfiguration($configuration)) {
             if ($configuration['width'] <= 80) {
-                $processingUrl = $fileInfoResponse['thumbnails']['mini'] ?? '';
+                $processingUrl = $fileInformation['thumbnails']['mini'] ?? '';
             } elseif ($configuration['width'] <= 250) {
-                $processingUrl = $fileInfoResponse['thumbnails']['thul'] ?? '';
+                $processingUrl = $fileInformation['thumbnails']['thul'] ?? '';
             } elseif ($configuration['width'] <= 800) {
-                $processingUrl = $fileInfoResponse['thumbnails']['webimage'] ?? '';
+                $processingUrl = $fileInformation['thumbnails']['webimage'] ?? '';
             }
         }
 
@@ -723,45 +629,17 @@ class BynderDriver extends AbstractDriver
             && $configuration['crop'] instanceof Area;
     }
 
-    /**
-     * Get cached or original file info from Bynder API
-     *
-     * Must be public as it was used by our EventListeners
-     */
-    public function getFileInfoResponse(string $fileIdentifier): array
+    protected function getPageNavCacheIdentifier(int $start, int $numberOfFiles, string $orderBy): string
     {
-        $fileCacheIdentifier = $this->getFileCacheIdentifier($fileIdentifier);
-        if ($this->fileInfoCache->has($fileCacheIdentifier)) {
-            $fileInfoResponse = $this->fileInfoCache->get($fileCacheIdentifier);
-        } else {
-            $fileInfoResponse = $this->bynderClient->getAssetBankManager()->getMediaList([
-                'id' => $fileIdentifier
-            ])->wait();
-            $this->fileInfoCache->set($fileCacheIdentifier, $fileInfoResponse);
-        }
-
-        return is_array($fileInfoResponse) ? $fileInfoResponse : [];
+        return sprintf(
+            'page-%d-%d-%s',
+            $start,
+            $numberOfFiles,
+            str_replace(' ', '-', $orderBy)
+        );
     }
 
-    /**
-     * Returns Bynder response for file download location
-     *
-     * Must be public as it was used by our EventListeners
-     */
-    public function getMediaDownloadResponse(string $fileIdentifier): array
-    {
-        $remoteFileResponse = $this->bynderClient->getAssetBankManager()->getMediaDownloadLocation(
-            $fileIdentifier
-        )->wait();
-
-        if (($remoteFileResponse['statuscode'] ?? '200') === '200') {
-            return $remoteFileResponse;
-        }
-
-        return [];
-    }
-
-    protected function getFileCacheIdentifier(string $fileIdentifier): string
+    public function getFileCacheIdentifier(string $fileIdentifier): string
     {
         return $this->getSanitizedCacheIdentifier('file-' . $fileIdentifier);
     }
@@ -810,6 +688,15 @@ class BynderDriver extends AbstractDriver
         );
 
         $this->getFlashMessageQueue()->enqueue($flashMessage);
+    }
+
+    /**
+     * Keep public.
+     * Useful for external calls like EventListeners
+     */
+    public function getBynderService(): BynderService
+    {
+        return $this->bynderService;
     }
 
     protected function getFlashMessageQueue(): FlashMessageQueue

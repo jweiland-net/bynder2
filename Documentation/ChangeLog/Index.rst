@@ -7,6 +7,14 @@
 ChangeLog
 =========
 
+**Version 1.0.7**
+
+- Move all bynder calls into its own BynderService
+- Catch various Exceptions of Bynder calls
+- Better usage of caches
+- Use FAL indexer to fetch all files and mark missing ones
+- Add OrderingUtility
+
 **Version 1.0.6**
 
 - Clear the two new caches in sync command
