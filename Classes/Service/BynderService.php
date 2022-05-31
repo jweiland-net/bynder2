@@ -112,7 +112,6 @@ class BynderService
                 $options['page'] = (int)floor($start / $maxFilesEachRequest) + 1;
             }
         } catch (\Exception $exception) {
-
         }
 
         return $files;

@@ -13,10 +13,8 @@ namespace JWeiland\Bynder2\EventListener;
 
 use JWeiland\Bynder2\Driver\BynderDriver;
 use TYPO3\CMS\Core\Cache\CacheManager;
-use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Imaging\GraphicalFunctions;
-use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Resource\Event\BeforeFileProcessingEvent;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
