@@ -63,6 +63,9 @@ jobs:
     - name: Lint PHP
       run: composer ci:php:lint
 
+    - name: Unit Tests
+      run: composer ci:tests:unit
+
     - name: Functional Tests
       env:
         typo3DatabaseName: test
