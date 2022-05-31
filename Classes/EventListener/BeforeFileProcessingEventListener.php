@@ -12,12 +12,25 @@ declare(strict_types=1);
 namespace JWeiland\Bynder2\EventListener;
 
 use JWeiland\Bynder2\Driver\BynderDriver;
+use TYPO3\CMS\Core\Cache\CacheManager;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Imaging\GraphicalFunctions;
 use TYPO3\CMS\Core\Resource\Event\BeforeFileProcessingEvent;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class BeforeFileProcessingEventListener
 {
+    /**
+     * @var FrontendInterface
+     */
+    protected $fileInfoCache;
+
+    public function __construct()
+    {
+        $this->fileInfoCache = GeneralUtility::makeInstance(CacheManager::class)
+            ->getCache('bynder2_fileinfo');
+    }
+
     public function __invoke(BeforeFileProcessingEvent $event): void
     {
         $bynderDriver = $event->getDriver();
@@ -25,15 +38,21 @@ class BeforeFileProcessingEventListener
             return;
         }
 
-        $fileInfoResponse = $bynderDriver->getFileInfoResponse($event->getFile()->getIdentifier());
-        $configuration = $this->getUpdatedConfiguration($event->getConfiguration(), $fileInfoResponse);
+        $fileCacheIdentifier = $bynderDriver->getFileCacheIdentifier($event->getFile()->getIdentifier());
+        if ($this->fileInfoCache->has($fileCacheIdentifier)) {
+            $fileInformation = $this->fileInfoCache->get($fileCacheIdentifier);
+        } else {
+            $fileInformation = $bynderDriver->getBynderService()->getFile($event->getFile()->getIdentifier());
+        }
+
+        $configuration = $this->getUpdatedConfiguration($event->getConfiguration(), $fileInformation);
 
         $event->getProcessedFile()->updateProperties([
             'width' => $configuration['width'],
-            'height' => $configuration['height']
+            'height' => $configuration['height'],
         ]);
 
-        if ($processingUrl = $bynderDriver->getProcessingUrl($event->getFile(), $configuration, $fileInfoResponse)) {
+        if ($processingUrl = $bynderDriver->getProcessingUrl($event->getFile(), $configuration, $fileInformation)) {
             $event->getProcessedFile()->updateProcessingUrl($processingUrl);
         }
     }

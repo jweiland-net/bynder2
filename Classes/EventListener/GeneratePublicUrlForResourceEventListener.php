@@ -26,8 +26,9 @@ class GeneratePublicUrlForResourceEventListener
 
         $publicUrl = '';
         if (!$this->isSearchCall()) {
-            $fileInfoResponse = $bynderDriver->getMediaDownloadResponse($event->getResource()->getIdentifier());
-            $publicUrl = $fileInfoResponse['s3_file'] ?? '';
+            $publicUrl = $bynderDriver->getBynderService()->getCdnDownloadUrl(
+                $event->getResource()->getIdentifier()
+            );
         }
 
         $event->setPublicUrl($publicUrl);

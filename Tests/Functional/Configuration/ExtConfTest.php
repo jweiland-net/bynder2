@@ -15,7 +15,7 @@ use JWeiland\Bynder2\Configuration\ExtConf;
 use Nimut\TestingFramework\TestCase\FunctionalTestCase;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 
-/**
+/*
  * Test case.
  */
 class ExtConfTest extends FunctionalTestCase

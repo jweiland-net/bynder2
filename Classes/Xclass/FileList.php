@@ -19,7 +19,7 @@ use TYPO3\CMS\Core\Type\Bitmask\JsConfirmation;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Filelist\FileListEditIconHookInterface;
 
-/**
+/*
  * XClassing TYPO3's FileList.
  * Remove the "Document view" in extended view _CONTROL_ for bynder storage,
  * as calling getPublicUrl() will create an API call to Bynder for each file which slows down the list rendering.

@@ -14,7 +14,7 @@ namespace JWeiland\Bynder2\Resource;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Index\ExtractorInterface;
 
-/**
+/*
  * As Bynder is no local storage we have to use our own extractor service to retrieve
  * metadata for sys_file_metadata like width, height, ...
  */

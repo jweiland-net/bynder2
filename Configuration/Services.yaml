@@ -7,7 +7,17 @@ services:
   JWeiland\Bynder2\:
     resource: '../Classes/*'
 
+  # Called by makeInstance in BynderDriver
   JWeiland\Bynder2\Configuration\ExtConf:
+    public: true
+
+  # Called by makeInstance in BynderDriver
+  # Deactivate autowire as we set constructor arguments on our own
+  JWeiland\Bynder2\Service\BynderService:
+    autowire: false
+    public: true
+
+  JWeiland\Bynder2\Utility\OrderingUtility:
     public: true
 
   JWeiland\Bynder2\EventListener\BeforeFileProcessingEventListener:

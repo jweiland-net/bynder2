@@ -17,7 +17,7 @@ use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 
-/**
+/*
  * This class retrieves and shows Bynder Account information
  */
 class BynderStatusElement extends AbstractFormElement
@@ -56,7 +56,7 @@ class BynderStatusElement extends AbstractFormElement
             $view = GeneralUtility::makeInstance(StandaloneView::class);
             $view->setTemplatePathAndFilename(
                 GeneralUtility::getFileAbsFileName(
-                    'EXT:bynder2/Resources/Templates/ShowAccountStatus.html'
+                    'EXT:bynder2/Resources/Private/Templates/ShowAccountStatus.html'
                 )
             );
 
