@@ -20,9 +20,9 @@
 	"require": {
 		"ext-dom": "*",
 		"ext-libxml": "*",
-		"typo3/cms-core": "^10.4.19",
-		"bynder/bynder-php-sdk": "1.0.9",
-		"guzzlehttp/oauth-subscriber": "0.3.0"
+		"typo3/cms-core": "^10.4.19 || ^11.5.0",
+		"bynder/bynder-php-sdk": "2.1.5",
+		"league/oauth2-client": "2.6.1"
 	},
 	"require-dev": {
 		"roave/security-advisories": "dev-latest",
@@ -34,7 +34,7 @@
 	"autoload": {
 		"psr-4": {
 			"JWeiland\\Bynder2\\": "Classes",
-			"GuzzleHttp\\Subscriber\\Oauth\\": "Resources/Private/PHP/guzzlehttp/oauth-subscriber/src",
+			"League\\OAuth2\\Client\\": "Resources/Private/PHP/thephpleague/oauth2-client/src",
 			"Bynder\\": "Resources/Private/PHP/bynder/bynder-php-sdk/src/Bynder"
 		}
 	},
