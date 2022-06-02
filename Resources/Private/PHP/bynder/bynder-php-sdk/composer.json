@@ -1,6 +1,7 @@
 {
   "name": "bynder/bynder-php-sdk",
   "description": "Bynder PHP Library",
+  "version": "2.1.5",
   "keywords": [
     "bynder",
     "sdk",
@@ -16,18 +17,26 @@
   ],
   "require": {
     "php": ">= 5.6",
-    "guzzlehttp/guzzle": "~6.0",
-    "guzzlehttp/oauth-subscriber": "0.3.*"
-   },
+    "guzzlehttp/guzzle": "~6.0|~7.0",
+    "league/oauth2-client": "^2.3"
+  },
   "require-dev": {
-    "phpunit/phpunit": "5.5.*",
-    "mikey179/vfsStream": "~1",
-    "phpdocumentor/phpdocumentor": "2.*"
+    "phpunit/phpunit": "^5",
+    "mikey179/vfsstream": "~1",
+    "phpdocumentor/phpdocumentor": "2.*",
+    "php-coveralls/php-coveralls": "^2.1"
   },
   "autoload": {
-    "psr-4": { "Bynder\\" : "src/Bynder" }
+    "psr-4": {
+      "Bynder\\": "src/Bynder"
+    }
+  },
+  "scripts": {
+    "test": "XDEBUG_MODE=coverage vendor/bin/phpunit tests -c phpunit.xml.dist"
   },
   "autoload-dev": {
-    "psr-4": { "Bynder\\Tests\\": "tests" }
+    "psr-4": {
+      "Bynder\\Tests\\": "tests"
+    }
   }
 }
