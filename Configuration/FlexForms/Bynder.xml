@@ -16,62 +16,27 @@
 					</config>
 				</TCEforms>
 			</url>
-			<otf_base_url>
+			<accessToken>
 				<TCEforms>
-					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:otf_base_url</label>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:accessToken</label>
 					<config>
 						<type>input</type>
 						<eval>trim</eval>
 						<size>30</size>
+						<fieldControl>
+							<accessToken>
+								<renderType>bynder2AccessToken</renderType>
+							</accessToken>
+						</fieldControl>
 					</config>
 				</TCEforms>
-			</otf_base_url>
-			<consumer_key>
-				<TCEforms>
-					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:consumer_key</label>
-					<config>
-						<type>input</type>
-						<eval>trim</eval>
-						<size>30</size>
-					</config>
-				</TCEforms>
-			</consumer_key>
-			<consumer_secret>
-				<TCEforms>
-					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:consumer_secret</label>
-					<config>
-						<type>input</type>
-						<eval>trim</eval>
-						<size>30</size>
-					</config>
-				</TCEforms>
-			</consumer_secret>
-			<token_key>
-				<TCEforms>
-					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:token_key</label>
-					<config>
-						<type>input</type>
-						<eval>trim</eval>
-						<size>30</size>
-					</config>
-				</TCEforms>
-			</token_key>
-			<token_secret>
-				<TCEforms>
-					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:token_secret</label>
-					<config>
-						<type>input</type>
-						<eval>trim</eval>
-						<size>30</size>
-					</config>
-				</TCEforms>
-			</token_secret>
+			</accessToken>
 			<bynderStatus>
 				<TCEforms>
 					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:bynderStatus</label>
 					<config>
 						<type>user</type>
-						<renderType>bynderStatus</renderType>
+						<renderType>bynder2Status</renderType>
 					</config>
 				</TCEforms>
 			</bynderStatus>

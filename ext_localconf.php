@@ -11,9 +11,16 @@ call_user_func(static function (): void {
         'flexFormDS' => 'FILE:EXT:bynder2/Configuration/FlexForms/Bynder.xml',
     ];
 
+    // Add wizard/control to access_token in XML structure
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1654175345] = [
+        'nodeName' => 'bynder2AccessToken',
+        'priority' => '70',
+        'class' => \JWeiland\Bynder2\Form\Element\AccessTokenElement::class
+    ];
+
     // Show bynder authentication status in file storage
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1653038580] = [
-        'nodeName' => 'bynderStatus',
+        'nodeName' => 'bynder2Status',
         'priority' => '70',
         'class' => \JWeiland\Bynder2\Form\Element\BynderStatusElement::class,
     ];

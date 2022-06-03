@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Service;
 
-use Bynder\Api\BynderApiFactory;
-use Bynder\Api\Impl\BynderApi;
+use Bynder\Api\BynderClient;
+use Bynder\Api\Impl\OAuth2\Configuration;
 use JWeiland\Bynder2\Configuration\ExtConf;
 use JWeiland\Bynder2\Service\Exception\InvalidBynderConfigurationException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -25,7 +25,7 @@ use TYPO3\CMS\Recordlist\Browser\FileBrowser;
 class BynderService
 {
     /**
-     * @var BynderApi|null
+     * @var BynderClient|null
      */
     protected $bynderClient;
 
@@ -46,15 +46,12 @@ class BynderService
             );
         }
 
-        $this->bynderClient = BynderApiFactory::create(
-            [
-                'consumerKey' => $configuration['consumer_key'],
-                'consumerSecret' => $configuration['consumer_secret'],
-                'token' => $configuration['token_key'],
-                'tokenSecret' => $configuration['token_secret'],
-                'baseUrl' => $configuration['url'],
-            ]
-        );
+        $this->bynderClient = new BynderClient(new Configuration(
+            $configuration['url'],
+            $configuration['redirectCallback'],
+            $configuration['clientId'],
+            $configuration['clientSecret']
+        ));
 
         $this->extConf = GeneralUtility::makeInstance(ExtConf::class);
     }
@@ -62,11 +59,26 @@ class BynderService
     protected function isValidConfiguration(array $configuration): bool
     {
         return isset(
-            $configuration['consumer_key'],
-            $configuration['consumer_secret'],
-            $configuration['token_key'],
-            $configuration['token_secret']
+            $configuration['clientId'],
+            $configuration['clientSecret'],
+            $configuration['bynderDomain'],
+            $configuration['redirectCallback']
         );
+    }
+
+    public function getAuthorizationUrl(): string
+    {
+        // "meta.assetbank:read" results in "Invalid scope", so for now I have deactivated it.
+        return $this->bynderClient->getAuthorizationUrl([
+            'offline',
+            'current.user:read',
+            'current.profile:read',
+            'asset:read',
+            'asset:write',
+            //'meta.assetbank:read',
+            'asset.usage:read',
+            'asset.usage:write',
+        ]);
     }
 
     public function getFiles(int $start = 1, int $numberOfFiles = 40, string $orderBy = ''): array
