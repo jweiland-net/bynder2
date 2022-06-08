@@ -11,11 +11,8 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Form\Element;
 
-use Bynder\Api\BynderClient;
-use Bynder\Api\Impl\OAuth2\Configuration;
 use JWeiland\Bynder2\Service\BynderService;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
-use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\StringUtility;

@@ -7,6 +7,11 @@
 ChangeLog
 =========
 
+**Version 2.0.0**
+
+- Update to new Bynder PHP SDK
+- Make use of new OAuth 2.0 authorization
+
 **Version 1.0.7**
 
 - Move all bynder calls into its own BynderService
