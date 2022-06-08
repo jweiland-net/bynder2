@@ -7,13 +7,6 @@
 Known Problems
 ==============
 
-TYPO3 11 compatibility
-======================
-
-As long as we don't have any OAuth 2 credentials we still have to use the old Bynder SDK 1.0.9. But this
-package needs Guzzle in version 6. As TYPO3 11 needs at least Guzzle in version 7.3 we can
-not upgrade to new Bynder SDK.
-
 Caching
 =======
 
