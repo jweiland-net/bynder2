@@ -11,10 +11,9 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Form\Element;
 
-use Bynder\Api\BynderClient;
-use Bynder\Api\Impl\OAuth2\Configuration;
+use JWeiland\Bynder2\Service\BynderService;
+use League\OAuth2\Client\Token\AccessToken;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
-use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
@@ -52,57 +51,54 @@ class BynderStatusElement extends AbstractFormElement
             && $config['clientId'] !== ''
             && $config['clientSecret'] !== ''
         ) {
-            $view = GeneralUtility::makeInstance(StandaloneView::class);
-            $view->setTemplatePathAndFilename(
-                GeneralUtility::getFileAbsFileName(
-                    'EXT:bynder2/Resources/Private/Templates/ShowAccountStatus.html'
-                )
-            );
+            if (isset($config['accessToken']) && $config['accessToken'] !== '') {
+                $view = $this->getStandaloneView();
 
-            try {
-                /*$configuration = new \Bynder\Api\Impl\PermanentTokens\Configuration(
-                    $config['url'],
-                    '',
-                    ['timeout' => 5] // Guzzle HTTP request options
-                );
+                try {
+                    $bynderService = $this->getBynderService($config);
 
-                $bynderClient = new BynderClient($configuration);
-                $user = $bynderClient->getCurrentUser()->wait();*/
+                    $view->assign('account', $bynderService->getCurrentUser());
+                    $view->assign('expires', $this->getExpires($config, $bynderService));
 
-
-
-
-                $bynderClient = new BynderClient(new Configuration(
-                    $config['url'],
-                    'https://www.drs.de/typo3/index.php',
-                    $config['clientId'],
-                    $config['clientSecret']
-                ));
-
-                $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
-                echo $uriBuilder->buildUriFromRoute(
-                    'get_bynder2_authorization_url',
-                    [
-                        'clientId' => 'bla',
-                    ]
-                );
-                echo $uriBuilder->buildUriFromRoutePath(
-                    '/ext/bynder2/authorization',
-                    [
-                        'clientId' => 'bla',
-                    ]
-                );
-
-                $token = $bynderClient->getAccessToken('d10a25e9b3f5a02e78501a62322cf7c9');
-
-                $view->assign('account', $bynderClient->getCurrentUser()->wait());
-            } catch (\Exception $exception) {
-                return 'Bynder Error: ' . $exception->getMessage();
+                    return $view->render();
+                } catch (\Exception $exception) {
+                    return 'Bynder Error: ' . $exception->getMessage();
+                }
+            } else {
+                return 'Status will be visible after configuring accessToken first';
             }
-
-            return $view->render();
         }
 
-        return 'Please setup bynder first to see your account info here.';
+        return 'Status will be visible after configuring following fields: url, redirectCallback, clientId and clientSecret';
+    }
+
+    /**
+     * This method has to be called AFTER the first bynder request.
+     * That's because the access token will be refreshed if expired while bynder request.
+     */
+    protected function getExpires(array $config, BynderService $bynderService): int
+    {
+        $expires = $config['expires'];
+        $token = $bynderService->getBynderConfiguration()->getToken();
+        if ($token instanceof AccessToken) {
+            $expires = $token->getExpires();
+        }
+
+        return (int)$expires;
+    }
+
+    protected function getStandaloneView(): StandaloneView
+    {
+        $view = GeneralUtility::makeInstance(StandaloneView::class);
+        $view->setTemplatePathAndFilename(
+            'EXT:bynder2/Resources/Private/Templates/ShowAccountStatus.html'
+        );
+
+        return $view;
+    }
+
+    protected function getBynderService(array $configuration): BynderService
+    {
+        return GeneralUtility::makeInstance(BynderService::class, $configuration);
     }
 }

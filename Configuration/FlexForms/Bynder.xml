@@ -9,6 +9,7 @@
 			<url>
 				<TCEforms>
 					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:url</label>
+					<description>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:url.description</description>
 					<config>
 						<type>input</type>
 						<eval>trim</eval>
@@ -16,6 +17,58 @@
 					</config>
 				</TCEforms>
 			</url>
+			<permanentToken>
+				<TCEforms>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:permanentToken</label>
+					<description>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:permanentToken.description</description>
+					<config>
+						<type>input</type>
+						<eval>trim</eval>
+						<size>30</size>
+					</config>
+				</TCEforms>
+			</permanentToken>
+			<redirectCallback>
+				<TCEforms>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:redirectCallback</label>
+					<description>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:redirectCallback.description</description>
+					<config>
+						<type>input</type>
+						<eval>trim</eval>
+						<size>30</size>
+					</config>
+				</TCEforms>
+			</redirectCallback>
+			<clientId>
+				<TCEforms>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:clientId</label>
+					<config>
+						<type>input</type>
+						<eval>trim</eval>
+						<size>30</size>
+					</config>
+				</TCEforms>
+			</clientId>
+			<clientSecret>
+				<TCEforms>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:clientSecret</label>
+					<config>
+						<type>input</type>
+						<eval>trim</eval>
+						<size>30</size>
+					</config>
+				</TCEforms>
+			</clientSecret>
+			<authorizationUrl>
+				<TCEforms>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:authorizationUrl</label>
+					<displayCond>FIELD:refreshToken:REQ:false</displayCond>
+					<config>
+						<type>user</type>
+						<renderType>bynder2AuthorizationUrl</renderType>
+					</config>
+				</TCEforms>
+			</authorizationUrl>
 			<accessToken>
 				<TCEforms>
 					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:accessToken</label>
@@ -23,14 +76,29 @@
 						<type>input</type>
 						<eval>trim</eval>
 						<size>30</size>
-						<fieldControl>
-							<accessToken>
-								<renderType>bynder2AccessToken</renderType>
-							</accessToken>
-						</fieldControl>
 					</config>
 				</TCEforms>
 			</accessToken>
+			<refreshToken>
+				<TCEforms>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:refreshToken</label>
+					<config>
+						<type>input</type>
+						<eval>trim</eval>
+						<size>30</size>
+					</config>
+				</TCEforms>
+			</refreshToken>
+			<expires>
+				<TCEforms>
+					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:expires</label>
+					<config>
+						<type>input</type>
+						<eval>trim</eval>
+						<size>30</size>
+					</config>
+				</TCEforms>
+			</expires>
 			<bynderStatus>
 				<TCEforms>
 					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:bynderStatus</label>

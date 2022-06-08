@@ -12,9 +12,11 @@ declare(strict_types=1);
 namespace JWeiland\Bynder2\Service;
 
 use Bynder\Api\BynderClient;
-use Bynder\Api\Impl\OAuth2\Configuration;
+use Bynder\Api\Impl\OAuth2\Configuration as AccessTokenConfiguration;
+use Bynder\Api\Impl\PermanentTokens\Configuration as PermanentConfiguration;
 use JWeiland\Bynder2\Configuration\ExtConf;
 use JWeiland\Bynder2\Service\Exception\InvalidBynderConfigurationException;
+use League\OAuth2\Client\Token\AccessToken;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Recordlist\Browser\FileBrowser;
@@ -28,6 +30,11 @@ class BynderService
      * @var BynderClient|null
      */
     protected $bynderClient;
+
+    /**
+     * @var PermanentConfiguration|AccessTokenConfiguration
+     */
+    protected $bynderConfiguration;
 
     /**
      * @var ExtConf|null
@@ -46,23 +53,55 @@ class BynderService
             );
         }
 
-        $this->bynderClient = new BynderClient(new Configuration(
-            $configuration['url'],
-            $configuration['redirectCallback'],
-            $configuration['clientId'],
-            $configuration['clientSecret']
-        ));
+        if (isset($configuration['permanentToken']) && $configuration['permanentToken'] !== '') {
+            $this->bynderConfiguration = new PermanentConfiguration(
+                $configuration['url'],
+                $configuration['permanentToken']
+            );
+        } else {
+            $this->bynderConfiguration = new AccessTokenConfiguration(
+                $configuration['url'],
+                $configuration['redirectCallback'],
+                $configuration['clientId'],
+                $configuration['clientSecret'],
+                $this->getAccessToken($configuration)
+            );
+        }
+
+        $this->bynderClient = new BynderClient($this->bynderConfiguration);
 
         $this->extConf = GeneralUtility::makeInstance(ExtConf::class);
+    }
+
+    protected function getAccessToken(array $configuration): ?AccessToken
+    {
+        if (
+            isset(
+                $configuration['accessToken'],
+                $configuration['refreshToken'],
+                $configuration['expires']
+            )
+            && $configuration['accessToken'] !== ''
+            && $configuration['refreshToken'] !== ''
+            && $configuration['expires'] !== ''
+        ) {
+            return new AccessToken([
+                'access_token' => $configuration['accessToken'],
+                'refresh_token' => $configuration['refreshToken'],
+                'expires' => (int)$configuration['expires'],
+            ]);
+        }
+
+        return null;
     }
 
     protected function isValidConfiguration(array $configuration): bool
     {
         return isset(
+            $configuration['url'],
+            $configuration['redirectCallback'],
             $configuration['clientId'],
-            $configuration['clientSecret'],
-            $configuration['bynderDomain'],
-            $configuration['redirectCallback']
+            $configuration['clientSecret']
         );
     }
 
@@ -79,6 +118,15 @@ class BynderService
             'asset.usage:read',
             'asset.usage:write',
         ]);
+    }
+
+    public function getCurrentUser(): array
+    {
+        try {
+            return $this->bynderClient->getCurrentUser()->wait();
+        } catch (\Exception $exception) {
+            return [];
+        }
     }
 
     public function getFiles(int $start = 1, int $numberOfFiles = 40, string $orderBy = ''): array
@@ -202,5 +250,18 @@ class BynderService
         }
 
         return false;
+    }
+
+    public function getBynderClient(): BynderClient
+    {
+        return $this->bynderClient;
+    }
+
+    /**
+     * @return AccessTokenConfiguration|PermanentConfiguration
+     */
+    public function getBynderConfiguration()
+    {
+        return $this->bynderConfiguration;
     }
 }

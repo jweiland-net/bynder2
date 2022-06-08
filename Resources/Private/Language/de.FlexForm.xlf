@@ -7,25 +7,49 @@
 				<source>Bynder URL (domain.bynder.com)</source>
 				<target>Bynder URL (domain.bynder.com)</target>
 			</trans-unit>
-			<trans-unit id="otf_base_url" xml:space="preserve">
-				<source>OnTheFly derivative's Url (optional)</source>
-				<target>OnTheFly derivative's Url (optional)</target>
+			<trans-unit id="url.description" xml:space="preserve">
+				<source>Please enter only the domain (without http:// or https://).</source>
+				<target>Bitte nur die Domain eintragen (ohne http:// oder https://).</target>
 			</trans-unit>
-			<trans-unit id="consumer_key" xml:space="preserve">
-				<source>Bynder OAuth consumer (key)</source>
-				<target>Bynder OAuth consumer (key)</target>
+			<trans-unit id="permanentToken" xml:space="preserve">
+				<source>Permanent Token</source>
+				<target>Permanent Token</target>
 			</trans-unit>
-			<trans-unit id="consumer_secret" xml:space="preserve">
-				<source>Bynder OAuth consumer secret</source>
-				<target>Bynder OAuth consumer secret</target>
+			<trans-unit id="permanentToken.description" xml:space="preserve">
+				<source>If you have a permanent token at hand, please enter it here. It is not necessary to fill in the following fields</source>
+				<target>Falls Sie einen permanenten token zur Hand haben, bitte hier eintragen. Es ist nicht erforderlich die nachfolgenden Felder zu befüllen</target>
 			</trans-unit>
-			<trans-unit id="token_key" xml:space="preserve">
-				<source>Bynder OAuth token (key)</source>
-				<target>Bynder OAuth token (key)</target>
+			<trans-unit id="redirectCallback" xml:space="preserve">
+				<source>Redirect Callback</source>
+				<target>Redirect Callback</target>
 			</trans-unit>
-			<trans-unit id="token_secret" xml:space="preserve">
-				<source>Bynder OAuth token secret</source>
-				<target>Bynder OAuth token secret</target>
+			<trans-unit id="redirectCallback.description" xml:space="preserve">
+				<source>The redirect callback must be exactly the same as configured in Bynder app</source>
+				<target>Der Redirect-Callback muss exakt derselbe sein, wie in der Bynder App konfiguriert</target>
+			</trans-unit>
+			<trans-unit id="clientId" xml:space="preserve">
+				<source>Client ID</source>
+				<target>Client ID</target>
+			</trans-unit>
+			<trans-unit id="clientSecret" xml:space="preserve">
+				<source>Client Secret</source>
+				<target>Client Secret</target>
+			</trans-unit>
+			<trans-unit id="authorizationUrl" xml:space="preserve">
+				<source>Authenticate Bynder App</source>
+				<target>Bynder App authorisieren</target>
+			</trans-unit>
+			<trans-unit id="accessToken" xml:space="preserve">
+				<source>Access Token</source>
+				<target>Access Token</target>
+			</trans-unit>
+			<trans-unit id="refreshToken" xml:space="preserve">
+				<source>Refresh Token</source>
+				<target>Refresh Token</target>
+			</trans-unit>
+			<trans-unit id="expires" xml:space="preserve">
+				<source>Expires</source>
+				<target>Expirs</target>
 			</trans-unit>
 			<trans-unit id="bynderStatus" xml:space="preserve">
 				<source>Bynder Account Status</source>

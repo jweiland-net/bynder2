@@ -1,0 +1,32 @@
+<f:if condition="{accessToken}">
+	<f:then>
+		<h1>Bynder Access Token</h1>
+		<p>Authorizing the Bynder App was successful.</p>
+		<p>Please copy following refreshToken into the Bynder Storage record:</p>
+		<pre><code>{refreshToken}</code></pre>
+	</f:then>
+	<f:else>
+		<h1>Generate Access Token for Storage</h1>
+		<f:if condition="{storages}">
+			<f:then>
+				<p>
+					We have found multiple storages in your TYPO3 system configured as Bynder. Please select one of the
+					listed Bynder storages to generate an access token for.
+				</p>
+				<ul>
+					<f:for each="{storages}" as="storage">
+						<li>
+							<f:be.link route="bynder_authorization_code"
+												 parameters="{ext-bynder-code: code, ext-bynder2-storage: storage.storageRecord.uid}">
+								UID: {storage.storageRecord.uid} - {storage.storageRecord.name}
+							</f:be.link>
+						</li>
+					</f:for>
+				</ul>
+			</f:then>
+			<f:else>
+				<p>No bynder storage found</p>
+			</f:else>
+		</f:if>
+	</f:else>
+</f:if>

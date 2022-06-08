@@ -13,9 +13,9 @@ call_user_func(static function (): void {
 
     // Add wizard/control to access_token in XML structure
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1654175345] = [
-        'nodeName' => 'bynder2AccessToken',
+        'nodeName' => 'bynder2AuthorizationUrl',
         'priority' => '70',
-        'class' => \JWeiland\Bynder2\Form\Element\AccessTokenElement::class
+        'class' => \JWeiland\Bynder2\Form\Element\BynderAuthorizationUrlElement::class,
     ];
 
     // Show bynder authentication status in file storage
