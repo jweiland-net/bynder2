@@ -33,6 +33,9 @@
 			<trans-unit id="accessToken" xml:space="preserve">
 				<source>Access Token</source>
 			</trans-unit>
+			<trans-unit id="accessToken.description" xml:space="preserve">
+				<source>If you need a new Access Token, please empty this field and click save. Then use the link again to authorize the Bynder app.</source>
+			</trans-unit>
 			<trans-unit id="refreshToken" xml:space="preserve">
 				<source>Refresh Token</source>
 			</trans-unit>

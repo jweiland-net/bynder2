@@ -43,6 +43,10 @@
 				<source>Access Token</source>
 				<target>Access Token</target>
 			</trans-unit>
+			<trans-unit id="accessToken.description" xml:space="preserve">
+				<source>If you need a new Access Token, please empty this field and click save. Then use the link again to authorize the Bynder app.</source>
+				<target>Falls Sie einen neuen Access Token benötigen, leeren Sie bitte dieses Feld und klicken Sie auf speichern. Verwenden Sie dann wieder den Link um die Bynder App zu authorisieren.</target>
+			</trans-unit>
 			<trans-unit id="refreshToken" xml:space="preserve">
 				<source>Refresh Token</source>
 				<target>Refresh Token</target>

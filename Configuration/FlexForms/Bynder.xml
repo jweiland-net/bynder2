@@ -62,7 +62,7 @@
 			<authorizationUrl>
 				<TCEforms>
 					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:authorizationUrl</label>
-					<displayCond>FIELD:refreshToken:REQ:false</displayCond>
+					<displayCond>FIELD:accessToken:REQ:false</displayCond>
 					<config>
 						<type>user</type>
 						<renderType>bynder2AuthorizationUrl</renderType>
@@ -72,6 +72,7 @@
 			<accessToken>
 				<TCEforms>
 					<label>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:accessToken</label>
+					<description>LLL:EXT:bynder2/Resources/Private/Language/FlexForm.xlf:accessToken.description</description>
 					<config>
 						<type>input</type>
 						<eval>trim</eval>
