@@ -7,6 +7,12 @@
 ChangeLog
 =========
 
+**Version 2.0.1**
+
+- Update ext icon
+- Update title in documentation
+- Remove minimal example from documentation
+
 **Version 2.0.0**
 
 - Update to new Bynder PHP SDK
