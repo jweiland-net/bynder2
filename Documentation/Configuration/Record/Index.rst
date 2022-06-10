@@ -20,7 +20,7 @@ You can request a permanent token from Bynder Support: https://support.bynder.co
 
 1. Create new file storage
 
-   Create new file storage record `sys_file_storage` on root page (page with UID 0)
+   Create new file storage record `sys_file_storage` on root page (page with UID 0) and give it a name.
 
 2. Storage type
 
@@ -38,6 +38,11 @@ You can request a permanent token from Bynder Support: https://support.bynder.co
 
    Set permanent token you have get from Bynder Support
 
+5. Set temporary folder
+
+   `bynder2` can not write files to Bynder, so you have to use another folder for temporary files. Please set
+   `Folder for manipulated and temporary images etc.` to something like `1:/_processed_/`.
+
 Access Token
 ------------
 
@@ -47,7 +52,7 @@ If you don't have access to permanent tokens you have to configure Bynder storag
 
 1.  Create new file storage
 
-    Create new file storage record `sys_file_storage` on root page (page with UID 0)
+    Create new file storage record `sys_file_storage` on root page (page with UID 0) and give it a name.
 
 2.  Storage type
 
@@ -87,10 +92,15 @@ If you don't have access to permanent tokens you have to configure Bynder storag
 
     Copy `access token`, `refresh token` and `expires` into your bynder storage record in the other browser tab.
 
-10. Save
+10. Set temporary folder
+
+   `bynder2` can not write files to Bynder, so you have to use another folder for temporary files. Please set
+   `Folder for manipulated and temporary images etc.` to something like `1:/_processed_/`.
+
+11. Save
 
     Click save. That will try to call the Bynder API the first time.
 
-11. Check
+12. Check
 
     If everything works you should now see the Bynder Status at the bottom of your new bynder storage record.
