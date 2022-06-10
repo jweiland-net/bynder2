@@ -76,8 +76,8 @@ class BeforeFileProcessingEventListener
                 0 => $fileInfoResponse['width'] ?? '0', // 0 => width. Don't change array key!
                 1 => $fileInfoResponse['height'] ?? '0' // 1 => height. Don't change array key!
             ],
-            (string)$configuration['width'], // string to keep "m" and "c" options
-            (string)$configuration['height'], // string to keep "m" and "c" options
+            (string)($configuration['width'] ?? ''), // string to keep "m" and "c" options
+            (string)($configuration['height'] ?? ''), // string to keep "m" and "c" options
             $options
         );
 

@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Driver;
 
-use In2code\Powermail\Utility\StringUtility;
 use JWeiland\Bynder2\Service\BynderService;
 use JWeiland\Bynder2\Service\Exception\InvalidBynderConfigurationException;
 use JWeiland\Bynder2\Utility\OrderingUtility;
@@ -31,6 +30,7 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\ResourceStorageInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
+use TYPO3\CMS\Core\Utility\StringUtility;
 
 /*
  * Class which contains all methods to arrange files and folders
@@ -313,6 +313,7 @@ class BynderDriver extends AbstractDriver
         // Currently, only READ permission is implemented
         return [
             'r' => true,
+            'w' => false,
         ];
     }
 
@@ -340,6 +341,7 @@ class BynderDriver extends AbstractDriver
                 'ctime' => time(),
                 'name' => '/',
                 'identifier' => '/',
+                'mimetype' => '',
                 'identifier_hash' => $this->hashIdentifier('/'),
                 'storage' => (string)$this->storageUid,
                 'folder_hash' => $this->hashIdentifier('/'),
