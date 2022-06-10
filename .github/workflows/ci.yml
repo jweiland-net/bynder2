@@ -10,8 +10,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        typo3: [^10.4]
+        typo3: [^10.4, ^11.5]
         php: ['7.4']
+        include:
+        - typo3: ^11.5
+          php: '8.0'
+        - typo3: ^11.5
+          php: '8.1'
 
     services:
       mysql:
@@ -33,6 +38,12 @@ jobs:
       with:
         php-version: ${{ matrix.php }}
         extensions: mbstring, dom, zip, mysql
+
+    - name: php-cs-fixer
+      run: composer ci:php:fixer
+
+    - name: Lint PHP
+      run: composer ci:php:lint
 
     - name: Start mysql service
       run: sudo /etc/init.d/mysql start
@@ -56,12 +67,6 @@ jobs:
         composer require typo3/cms-core:${{ matrix.typo3 }} --no-progress
         composer require typo3/cms-extensionmanager:${{ matrix.typo3 }} --no-progress
         git checkout composer.json
-
-    - name: php-cs-fixer
-      run: composer ci:php:fixer
-
-    - name: Lint PHP
-      run: composer ci:php:lint
 
     - name: Unit Tests
       run: composer ci:tests:unit
