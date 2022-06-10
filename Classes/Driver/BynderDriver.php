@@ -341,6 +341,7 @@ class BynderDriver extends AbstractDriver
                 'ctime' => time(),
                 'name' => '/',
                 'identifier' => '/',
+                'mimetype' => '',
                 'identifier_hash' => $this->hashIdentifier('/'),
                 'storage' => (string)$this->storageUid,
                 'folder_hash' => $this->hashIdentifier('/'),
