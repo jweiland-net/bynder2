@@ -22,6 +22,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\Index\Indexer;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
@@ -70,10 +71,18 @@ class SyncBynderFilesCommandTest extends FunctionalTestCase
         $this->outputProphecy = $this->prophesize(Output::class);
 
         $this->storageRepositoryProphecy = $this->prophesize(StorageRepository::class);
-        GeneralUtility::setSingletonInstance(
-            StorageRepository::class,
-            $this->storageRepositoryProphecy->reveal()
-        );
+        $typo3Branch = GeneralUtility::makeInstance(Typo3Version::class)->getBranch();
+        if (version_compare($typo3Branch, '11.0', '<')) {
+            GeneralUtility::setSingletonInstance(
+                StorageRepository::class,
+                $this->storageRepositoryProphecy->reveal()
+            );
+        } else {
+            GeneralUtility::addInstance(
+                StorageRepository::class,
+                $this->storageRepositoryProphecy->reveal()
+            );
+        }
 
         /** @var FrontendInterface|ObjectProphecy $cache */
         $cache = $this->prophesize(VariableFrontend::class);
