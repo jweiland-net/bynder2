@@ -4,7 +4,7 @@
 	"description": "Bynder FAL driver for TYPO3 CMS",
 	"license": "GPL-2.0-or-later",
 	"keywords": ["typo3", "TYPO3 CMS", "bynder", "fal"],
-	"homepage": "https://www.jweiland.net",
+	"homepage": "https://jweiland.net",
 	"authors": [
 		{
 			"name": "Stefan Froemken",
@@ -30,6 +30,9 @@
 		"nimut/testing-framework": "^6.0",
 		"phpunit/phpunit": "^9.5",
 		"phpspec/prophecy-phpunit": "^2.0"
+	},
+	"replace": {
+		"typo3-ter/bynder2": "self.version"
 	},
 	"autoload": {
 		"psr-4": {
