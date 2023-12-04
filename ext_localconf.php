@@ -25,6 +25,16 @@ call_user_func(static function (): void {
         'class' => \JWeiland\Bynder2\Form\Element\BynderStatusElement::class,
     ];
 
+    if (!isset($GLOBALS['TYPO3_CONF_VARS']['LOG']['JWeiland']['Bynder2']['writerConfiguration'])) {
+        $GLOBALS['TYPO3_CONF_VARS']['LOG']['JWeiland']['Bynder2']['writerConfiguration'] = [
+            \Psr\Log\LogLevel::INFO => [
+                \TYPO3\CMS\Core\Log\Writer\FileWriter::class => [
+                    'logFileInfix' => 'bynder2',
+                ],
+            ],
+        ];
+    }
+
     // Create cache to speed up page navigation through the files
     $extConf = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
         \JWeiland\Bynder2\Configuration\ExtConf::class

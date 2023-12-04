@@ -39,11 +39,11 @@ class BeforeFileProcessingEventListener
         }
 
         $fileCacheIdentifier = $bynderDriver->getFileCacheIdentifier($event->getFile()->getIdentifier());
-        if ($this->fileInfoCache->has($fileCacheIdentifier)) {
-            $fileInformation = $this->fileInfoCache->get($fileCacheIdentifier);
-        } else {
-            $fileInformation = $bynderDriver->getBynderService()->getFile($event->getFile()->getIdentifier());
+        if (!$this->fileInfoCache->has($fileCacheIdentifier)) {
+            return;
         }
+
+        $fileInformation = $this->fileInfoCache->get($fileCacheIdentifier);
 
         $configuration = $this->getUpdatedConfiguration($event->getConfiguration(), $fileInformation);
 
