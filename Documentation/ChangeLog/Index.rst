@@ -7,6 +7,13 @@
 ChangeLog
 =========
 
+**Version 2.0.2**
+
+- Add logger to BynderService and SyncBynderFilesCommand
+- Add specific log file for EXT:bynder2
+- Use PHP generator/yield to reduce memory while retrieving thousands of files
+- Inject TYPO3 Guzzle config from TYPO3_CONF_VARS/HTTP to BynderClient
+
 **Version 2.0.1**
 
 - Update ext icon

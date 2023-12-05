@@ -17,15 +17,19 @@ use Bynder\Api\Impl\PermanentTokens\Configuration as PermanentConfiguration;
 use JWeiland\Bynder2\Configuration\ExtConf;
 use JWeiland\Bynder2\Service\Exception\InvalidBynderConfigurationException;
 use League\OAuth2\Client\Token\AccessToken;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Recordlist\Browser\FileBrowser;
 
-/*
- *
+/**
+ * Service to connect to the Bynder API and retrieving the files
  */
-class BynderService
+class BynderService implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var BynderClient|null
      */
@@ -37,7 +41,7 @@ class BynderService
     protected $bynderConfiguration;
 
     /**
-     * @var ExtConf|null
+     * @var ExtConf
      */
     protected $extConf;
 
@@ -56,7 +60,8 @@ class BynderService
         if (isset($configuration['permanentToken']) && $configuration['permanentToken'] !== '') {
             $this->bynderConfiguration = new PermanentConfiguration(
                 $configuration['url'],
-                $configuration['permanentToken']
+                $configuration['permanentToken'],
+                $this->getGuzzleRequestOptions()
             );
         } else {
             $this->bynderConfiguration = new AccessTokenConfiguration(
@@ -64,13 +69,21 @@ class BynderService
                 $configuration['redirectCallback'],
                 $configuration['clientId'],
                 $configuration['clientSecret'],
-                $this->getAccessToken($configuration)
+                $this->getAccessToken($configuration),
+                $this->getGuzzleRequestOptions()
             );
         }
 
-        $this->bynderClient = new BynderClient($this->bynderConfiguration);
-
-        $this->extConf = GeneralUtility::makeInstance(ExtConf::class);
+        try {
+            $this->bynderClient = new BynderClient($this->bynderConfiguration);
+        } catch (\Exception $e) {
+            $this->logger->error(
+                'Bynder client could not be instantiated, because of invalid bynder configuration',
+                [
+                    'exception' => $e,
+                ]
+            );
+        }
     }
 
     protected function getAccessToken(array $configuration): ?AccessToken
@@ -124,17 +137,17 @@ class BynderService
     {
         try {
             return $this->bynderClient->getCurrentUser()->wait();
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
+            $this->logger->error('Current user could not be fetched by bynder API', ['exception' => $e]);
             return [];
         }
     }
 
-    public function getFiles(int $start = 1, int $numberOfFiles = 40, string $orderBy = ''): array
+    public function getFiles(int $start = 1, int $numberOfFiles = 40, string $orderBy = ''): \Generator
     {
-        // This is the limit of Bynder API
-        $maxFilesEachRequest = 1000;
+        // 1000 is the limit of Bynder API
+        $maxFilesEachRequest = 500;
 
-        $files = [];
         $start = MathUtility::forceIntegerInRange($start, 1);
 
         if ($numberOfFiles === 0 && $this->isFileBrowserCall()) {
@@ -160,7 +173,20 @@ class BynderService
             ];
 
             while ($bynderFiles = $this->bynderClient->getAssetBankManager()->getMediaList($options)->wait()) {
-                array_push($files, ...$bynderFiles);
+                if (!is_array($bynderFiles)) {
+                    break;
+                }
+
+                $this->logger->debug('Retrieved ' . $maxFilesEachRequest . ' files from Bynder API');
+
+                // Try to keep the memory low.
+                // Not confirmed, but it may happen that EXT:bynder2 will be blocked temporary by Bynder server as
+                // it starts to many requests to retrieve all files. To prevent that we have migrated to a
+                // PHP generator yield solution. In that case just one request starts, and we process the resulting
+                // files first before requesting the next bunch of files.
+                foreach ($bynderFiles as $bynderFile) {
+                    yield $bynderFile['id'] => $bynderFile;
+                }
 
                 // Prevent calling the Bynder API again
                 if (MathUtility::isIntegerInRange($numberOfFiles, 1, $maxFilesEachRequest)) {
@@ -172,24 +198,8 @@ class BynderService
                 $options['page'] = (int)floor($start / $maxFilesEachRequest) + 1;
             }
         } catch (\Exception $exception) {
+            $this->logger->error('Bynder API error: ' . $exception->getMessage(), ['exception' => $exception]);
         }
-
-        return $files;
-    }
-
-    public function getFile(string $fileIdentifier): array
-    {
-        $file = [];
-        try {
-            $file = $this->bynderClient->getAssetBankManager()->getMediaInfo(
-                $fileIdentifier
-            )->wait();
-        } catch (\Exception $exception) {
-            // File does not exists
-            return $file;
-        }
-
-        return (($file['statuscode'] ?? '200') === '200') ? $file : [];
     }
 
     public function countFiles(): int
@@ -226,6 +236,12 @@ class BynderService
             $cdnDownloadUrl = $remoteFileResponse['s3_file'] ?? '';
         } catch (\Exception $exception) {
             // If file was not found at Bynder, it reacts with an Exception
+            $this->logger->error(
+                'CDN download URL for file "' . $fileIdentifier . '" could not be retrieved',
+                [
+                    'exception' => $exception,
+                ]
+            );
         }
 
         $cdnDownloadUrlCache[$fileIdentifier] = $cdnDownloadUrl;
@@ -237,8 +253,6 @@ class BynderService
      * If call comes from FileBrowser the number of files is not limited. As Bynder works with just ONE folder
      * you will always get ALL files of Bynder, which can be a lot of files to render, slows down performance and may
      * break rendering process (Error 500)
-     *
-     * @return bool
      */
     protected function isFileBrowserCall(): bool
     {
@@ -263,5 +277,28 @@ class BynderService
     public function getBynderConfiguration()
     {
         return $this->bynderConfiguration;
+    }
+
+    public function getGuzzleRequestOptions(): array
+    {
+        // We subtract 5 seconds, so that PHP can still react on failure
+        $defaultRequestOptions = [
+            'connect_timeout' => 10,
+            'timeout' => (int)(ini_get('max_execution_time') ?? 30) - 5
+        ];
+
+        if (isset($GLOBALS['TYPO3_CONF_VARS']['HTTP']) && is_array($GLOBALS['TYPO3_CONF_VARS']['HTTP'])) {
+            // Remove HTTP handler, as Guzzle con not interpret empty array handlers
+            if (
+                isset($GLOBALS['TYPO3_CONF_VARS']['HTTP']['handler'])
+                && $GLOBALS['TYPO3_CONF_VARS']['HTTP']['handler'] === []
+            ) {
+                unset($GLOBALS['TYPO3_CONF_VARS']['HTTP']['handler']);
+            }
+
+            return $GLOBALS['TYPO3_CONF_VARS']['HTTP'];
+        }
+
+        return $defaultRequestOptions;
     }
 }

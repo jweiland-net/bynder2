@@ -177,31 +177,12 @@ class BynderDriver extends AbstractDriver
 
     public function fileExists($fileIdentifier): bool
     {
-        static $fileExistsCache = [];
-
         // Early return for root folder "/"
         if ($fileIdentifier === '/') {
             return true;
         }
 
-        $fileCacheIdentifier = $this->getFileCacheIdentifier($fileIdentifier);
-
-        // Early return, if information is in local cache
-        if (array_key_exists($fileCacheIdentifier, $fileExistsCache)) {
-            return $fileExistsCache[$fileCacheIdentifier];
-        }
-
-        // Early return, if information is in Caching Framework
-        if ($this->fileInfoCache->has($fileCacheIdentifier)) {
-            $fileExistsCache[$fileCacheIdentifier] = true;
-            return true;
-        }
-
-        $fileInformation = $this->bynderService->getFile($fileIdentifier);
-        $this->fileInfoCache->set($fileCacheIdentifier, $fileInformation);
-        $fileExistsCache[$fileCacheIdentifier] = (bool)$fileInformation;
-
-        return (bool)$fileInformation;
+        return $this->fileInfoCache->has($this->getFileCacheIdentifier($fileIdentifier));
     }
 
     public function folderExists($folderIdentifier): bool
@@ -352,7 +333,7 @@ class BynderDriver extends AbstractDriver
         if ($this->fileInfoCache->has($fileCacheIdentifier)) {
             $fileInformation = $this->fileInfoCache->get($fileCacheIdentifier);
         } else {
-            $fileInformation = $this->bynderService->getFile($fileIdentifier);
+            $fileInformation = [];
         }
 
         $properties = [];
@@ -602,7 +583,9 @@ class BynderDriver extends AbstractDriver
     {
         // Please try to assign $fileInformation to prevent multiple API calls
         if ($fileInformation === []) {
-            $fileInformation = $this->bynderService->getFile($file->getIdentifier());
+            if ($this->fileInfoCache->has($file->getIdentifier())) {
+                $fileInformation = $this->fileInfoCache->get($file->getIdentifier());
+            }
 
             // If still empty, an exception was thrown. File not found. Use fallback.
             if ($fileInformation === []) {

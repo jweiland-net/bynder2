@@ -7,6 +7,20 @@ services:
   JWeiland\Bynder2\:
     resource: '../Classes/*'
 
+  bynder2.cache.fileinfo:
+    class: TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
+    factory: ['@TYPO3\CMS\Core\Cache\CacheManager', 'getCache']
+    arguments: ['bynder2_fileinfo']
+
+  bynder2.cache.pagenav:
+    class: TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
+    factory: ['@TYPO3\CMS\Core\Cache\CacheManager', 'getCache']
+    arguments: ['bynder2_pagenav']
+
+  bynder2.storages:
+    class: SplObjectStorage
+    factory: ['@JWeiland\Bynder2\Repository\BynderStorageRepository', 'getBynderStorages']
+
   # Called by makeInstance in BynderDriver
   JWeiland\Bynder2\Configuration\ExtConf:
     public: true
@@ -16,21 +30,27 @@ services:
   JWeiland\Bynder2\Service\BynderService:
     autowire: false
     public: true
+    calls:
+      - setExtConf: ['@JWeiland\Bynder2\Configuration\ExtConf']
 
   JWeiland\Bynder2\Utility\OrderingUtility:
     public: true
 
   JWeiland\Bynder2\EventListener\BeforeFileProcessingEventListener:
     tags:
-    - name: event.listener
-      event: TYPO3\CMS\Core\Resource\Event\BeforeFileProcessingEvent
+      - name: event.listener
+        event: TYPO3\CMS\Core\Resource\Event\BeforeFileProcessingEvent
 
   JWeiland\Bynder2\EventListener\GeneratePublicUrlForResourceEventListener:
     tags:
-    - name: event.listener
-      event: TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent
+      - name: event.listener
+        event: TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent
 
   # Register commands for bynder2
   JWeiland\Bynder2\Command\SyncBynderFilesCommand:
+    calls:
+      - setBynderStorages: ['@bynder2.storages']
+      - setFileInfoCache: ['@bynder2.cache.fileinfo']
+      - setPageNavCache: ['@bynder2.cache.pagenav']
     tags:
-    - { name: 'console.command', command: 'fal:bynder:sync', schedulable: true }
+      - {name: 'console.command', command: 'fal:bynder:sync', schedulable: true}
