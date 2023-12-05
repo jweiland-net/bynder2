@@ -137,7 +137,7 @@ class SyncBynderFilesCommandTest extends FunctionalTestCase
         $bynderStorages = new \SplObjectStorage();
         $bynderStorages->attach($resourceStorageProphecy->reveal());
 
-        $this->subject->setBynderStorages(new \SplObjectStorage());
+        $this->subject->setBynderStorages($bynderStorages);
 
         /** @var Indexer|ObjectProphecy $indexerProphecy */
         $indexerProphecy = $this->prophesize(Indexer::class);
