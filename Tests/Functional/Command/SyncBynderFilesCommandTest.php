@@ -89,7 +89,8 @@ class SyncBynderFilesCommandTest extends FunctionalTestCase
             ->flush()
             ->shouldBeCalled();
 
-        $this->subject = new SyncBynderFilesCommand();
+        // We have to use GeneralUtility:: makeInstance here because of injecting the logger
+        $this->subject = GeneralUtility::makeInstance(SyncBynderFilesCommand::class);
         $this->subject->setFileInfoCache($cache->reveal());
         $this->subject->setPageNavCache($cache->reveal());
     }
