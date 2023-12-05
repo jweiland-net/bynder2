@@ -19,7 +19,6 @@ use Symfony\Component\Console\Input\Input;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Console\Output\OutputInterface;
-use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
 use TYPO3\CMS\Core\Information\Typo3Version;
@@ -90,20 +89,9 @@ class SyncBynderFilesCommandTest extends FunctionalTestCase
             ->flush()
             ->shouldBeCalled();
 
-        /** @var CacheManager|ObjectProphecy $cacheManager */
-        $cacheManager = $this->prophesize(CacheManager::class);
-        $cacheManager
-            ->getCache('bynder2_pagenav')
-            ->shouldBeCalled()
-            ->willReturn($cache->reveal());
-        $cacheManager
-            ->getCache('bynder2_fileinfo')
-            ->shouldBeCalled()
-            ->willReturn($cache->reveal());
-
-        GeneralUtility::setSingletonInstance(CacheManager::class, $cacheManager->reveal());
-
         $this->subject = new SyncBynderFilesCommand();
+        $this->subject->setFileInfoCache($cache->reveal());
+        $this->subject->setPageNavCache($cache->reveal());
     }
 
     protected function tearDown(): void
