@@ -152,7 +152,6 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
         } catch (InsufficientFolderAccessPermissionsException $insufficientFolderAccessPermissionsException) {
             $this->output->writeln('CLI user does not have permission to count files of bynder storage');
             $this->logger->error('CLI user does not have permission to count files of bynder storage');
-
         }
 
         return 0;
