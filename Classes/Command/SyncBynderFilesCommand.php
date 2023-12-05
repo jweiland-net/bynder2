@@ -132,7 +132,7 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
         try {
             $this->getIndexer($bynderStorage)->processChangesInStorages();
         } catch (\Exception $e) {
-            $this->logger->error('TYPO3 indexer error: ' . $e->getMessage());
+            $this->logger->error('TYPO3 indexer error: ' . $e->getMessage(), ['exception' => $e]);
             return;
         }
 
@@ -151,7 +151,12 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
             return $storage->countFilesInFolder($storage->getRootLevelFolder());
         } catch (InsufficientFolderAccessPermissionsException $insufficientFolderAccessPermissionsException) {
             $this->output->writeln('CLI user does not have permission to count files of bynder storage');
-            $this->logger->error('CLI user does not have permission to count files of bynder storage');
+            $this->logger->error(
+                'CLI user does not have permission to count files of bynder storage',
+                [
+                    'exception' => $insufficientFolderAccessPermissionsException,
+                ]
+            );
         }
 
         return 0;

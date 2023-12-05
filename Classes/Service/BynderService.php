@@ -78,7 +78,10 @@ class BynderService implements LoggerAwareInterface
             $this->bynderClient = new BynderClient($this->bynderConfiguration);
         } catch (\Exception $e) {
             $this->logger->error(
-                'Bynder client could not be instantiated, because of invalid bynder configuration'
+                'Bynder client could not be instantiated, because of invalid bynder configuration',
+                [
+                    'exception' => $e,
+                ]
             );
         }
     }
@@ -142,8 +145,8 @@ class BynderService implements LoggerAwareInterface
     {
         try {
             return $this->bynderClient->getCurrentUser()->wait();
-        } catch (\Exception $exception) {
-            $this->logger->error('Current user could not be fetched by bynder API');
+        } catch (\Exception $e) {
+            $this->logger->error('Current user could not be fetched by bynder API', ['exception' => $e]);
             return [];
         }
     }
@@ -203,7 +206,7 @@ class BynderService implements LoggerAwareInterface
                 $options['page'] = (int)floor($start / $maxFilesEachRequest) + 1;
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Bynder API error: ' . $exception->getMessage());
+            $this->logger->error('Bynder API error: ' . $exception->getMessage(), ['exception' => $exception]);
         }
     }
 
@@ -241,7 +244,12 @@ class BynderService implements LoggerAwareInterface
             $cdnDownloadUrl = $remoteFileResponse['s3_file'] ?? '';
         } catch (\Exception $exception) {
             // If file was not found at Bynder, it reacts with an Exception
-            $this->logger->error('CDN download URL for file "' . $fileIdentifier . '" could not be retrieved');
+            $this->logger->error(
+                'CDN download URL for file "' . $fileIdentifier . '" could not be retrieved',
+                [
+                    'exception' => $exception,
+                ]
+            );
         }
 
         $cdnDownloadUrlCache[$fileIdentifier] = $cdnDownloadUrl;
