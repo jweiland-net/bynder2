@@ -86,14 +86,6 @@ class BynderService implements LoggerAwareInterface
         }
     }
 
-    /**
-     * Because constructor will be called with arguments we inject FileInfo Cache with DI
-     */
-    public function setFileInfoCache(FrontendInterface $fileInfoCache)
-    {
-        $this->fileInfoCache = $fileInfoCache;
-    }
-
     protected function getAccessToken(array $configuration): ?AccessToken
     {
         if (
