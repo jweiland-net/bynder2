@@ -51,11 +51,6 @@ class SyncBynderFilesCommandTest extends FunctionalTestCase
     protected $outputProphecy;
 
     /**
-     * @var StorageRepository|ObjectProphecy
-     */
-    protected $storageRepositoryProphecy;
-
-    /**
      * @var array
      */
     protected $testExtensionsToLoad = [
@@ -68,20 +63,6 @@ class SyncBynderFilesCommandTest extends FunctionalTestCase
 
         $this->inputProphecy = $this->prophesize(Input::class);
         $this->outputProphecy = $this->prophesize(Output::class);
-
-        $this->storageRepositoryProphecy = $this->prophesize(StorageRepository::class);
-        $typo3Branch = GeneralUtility::makeInstance(Typo3Version::class)->getBranch();
-        if (version_compare($typo3Branch, '11.0', '<')) {
-            GeneralUtility::setSingletonInstance(
-                StorageRepository::class,
-                $this->storageRepositoryProphecy->reveal()
-            );
-        } else {
-            GeneralUtility::addInstance(
-                StorageRepository::class,
-                $this->storageRepositoryProphecy->reveal()
-            );
-        }
 
         /** @var FrontendInterface|ObjectProphecy $cache */
         $cache = $this->prophesize(VariableFrontend::class);
@@ -109,13 +90,10 @@ class SyncBynderFilesCommandTest extends FunctionalTestCase
      */
     public function runWithoutBynderStorageWillReturn0(): void
     {
-        $this->storageRepositoryProphecy
-            ->findByStorageType('bynder2')
-            ->shouldBeCalled()
-            ->willReturn([]);
+        $this->subject->setBynderStorages(new \SplObjectStorage());
 
         $this->outputProphecy
-            ->writeln('Clear bynder information cache')
+            ->writeln('Clear bynder caches')
             ->shouldBeCalled();
 
         $this->outputProphecy
@@ -158,19 +136,17 @@ class SyncBynderFilesCommandTest extends FunctionalTestCase
             ->shouldBeCalled()
             ->willReturn(2);
 
-        $this->storageRepositoryProphecy
-            ->findByStorageType('bynder2')
-            ->shouldBeCalled()
-            ->willReturn([
-                0 => $resourceStorageProphecy->reveal(),
-            ]);
+        $bynderStorages = new \SplObjectStorage();
+        $bynderStorages->attach($resourceStorageProphecy->reveal());
 
-        /** @var Indexer|ObjectProphecy $indexer */
-        $indexer = $this->prophesize(Indexer::class);
-        $indexer
+        $this->subject->setBynderStorages(new \SplObjectStorage());
+
+        /** @var Indexer|ObjectProphecy $indexerProphecy */
+        $indexerProphecy = $this->prophesize(Indexer::class);
+        $indexerProphecy
             ->processChangesInStorages()
             ->shouldBeCalled();
-        GeneralUtility::addInstance(Indexer::class, $indexer->reveal());
+        GeneralUtility::addInstance(Indexer::class, $indexerProphecy->reveal());
 
         self::assertSame(
             0,
