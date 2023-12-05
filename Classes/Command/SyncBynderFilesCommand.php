@@ -109,7 +109,7 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
 
     protected function synchronizeStorages(): void
     {
-        if ($this->bynderStorages === []) {
+        if ($this->bynderStorages->count() === 0) {
             $this->output->writeln('No bynder storages found.');
             $this->logger->warning('No bynder storages found.');
             return;
