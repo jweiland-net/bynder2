@@ -20,7 +20,7 @@
 	"require": {
 		"ext-dom": "*",
 		"ext-libxml": "*",
-		"typo3/cms-core": "^10.4.19 || ^11.5.0",
+		"typo3/cms-core": "^10.4.37 || ^11.5.33",
 		"bynder/bynder-php-sdk": "2.1.5",
 		"league/oauth2-client": "2.6.1"
 	},

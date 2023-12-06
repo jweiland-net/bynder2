@@ -7,6 +7,11 @@
 ChangeLog
 =========
 
+**Version 2.0.3**
+
+- Exclude .github folder in .gitattributes
+- Update .gitignore file
+
 **Version 2.0.2**
 
 - Add logger to BynderService and SyncBynderFilesCommand
