@@ -21,20 +21,21 @@ services:
     class: SplObjectStorage
     factory: ['@JWeiland\Bynder2\Repository\BynderStorageRepository', 'getBynderStorages']
 
+  JWeiland\Bynder2\Command\SyncBynderFilesCommand:
+    calls:
+      - setBynderStorages: ['@bynder2.storages']
+      - setFileInfoCache: ['@bynder2.cache.fileinfo']
+      - setPageNavCache: ['@bynder2.cache.pagenav']
+    tags:
+      - {name: 'console.command', command: 'fal:bynder:sync', schedulable: true}
+
   # Called by makeInstance in BynderDriver
   JWeiland\Bynder2\Configuration\ExtConf:
     public: true
 
-  # Called by makeInstance in BynderDriver
-  # Deactivate autowire as we set constructor arguments on our own
-  JWeiland\Bynder2\Service\BynderService:
-    autowire: false
-    public: true
-    calls:
-      - setExtConf: ['@JWeiland\Bynder2\Configuration\ExtConf']
-
-  JWeiland\Bynder2\Utility\OrderingUtility:
-    public: true
+  JWeiland\Bynder2\Controller\AuthorizationUrlController:
+    arguments:
+      - $bynderStorages: ['@bynder2.storages']
 
   JWeiland\Bynder2\EventListener\BeforeFileProcessingEventListener:
     tags:
@@ -46,11 +47,15 @@ services:
       - name: event.listener
         event: TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent
 
-  # Register commands for bynder2
-  JWeiland\Bynder2\Command\SyncBynderFilesCommand:
-    calls:
-      - setBynderStorages: ['@bynder2.storages']
-      - setFileInfoCache: ['@bynder2.cache.fileinfo']
-      - setPageNavCache: ['@bynder2.cache.pagenav']
-    tags:
-      - {name: 'console.command', command: 'fal:bynder:sync', schedulable: true}
+  # Called by makeInstance in various classes
+  JWeiland\Bynder2\Service\BynderServiceFactory:
+    public: true
+
+  # Called by makeInstance in BynderServiceFactory
+  JWeiland\Bynder2\Service\BynderService:
+    public: true
+    shared: true
+
+  # Called by makeInstance in BynderDriver
+  JWeiland\Bynder2\Utility\OrderingUtility:
+    public: true

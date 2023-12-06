@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace JWeiland\Bynder2\Driver;
 
 use JWeiland\Bynder2\Service\BynderService;
+use JWeiland\Bynder2\Service\BynderServiceFactory;
 use JWeiland\Bynder2\Service\Exception\InvalidBynderConfigurationException;
 use JWeiland\Bynder2\Utility\OrderingUtility;
 use TYPO3\CMS\Core\Cache\CacheManager;
@@ -107,7 +108,8 @@ class BynderDriver extends AbstractDriver
         }
 
         try {
-            $this->bynderService = GeneralUtility::makeInstance(BynderService::class, $this->configuration);
+            $bynderServiceFactory = GeneralUtility::makeInstance(BynderServiceFactory::class);
+            $this->bynderService = $bynderServiceFactory->getBynderServiceForConfiguration($this->configuration);
         } catch (InvalidBynderConfigurationException $invalidBynderConfigurationException) {
             $this->addFlashMessage(
                 $invalidBynderConfigurationException->getMessage(),
