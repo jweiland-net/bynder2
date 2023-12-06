@@ -12,13 +12,13 @@ declare(strict_types=1);
 namespace JWeiland\Bynder2\Controller;
 
 use JWeiland\Bynder2\Service\BynderService;
+use JWeiland\Bynder2\Service\BynderServiceFactory;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
-use TYPO3\CMS\Core\Resource\StorageRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
@@ -29,12 +29,28 @@ use TYPO3\CMS\Fluid\View\StandaloneView;
 class AuthorizationUrlController
 {
     /**
-     * Constructor
+     * @var BynderServiceFactory
      */
-    public function __construct()
-    {
-        $this->moduleTemplate = GeneralUtility::makeInstance(ModuleTemplate::class);
-        // $this->getLanguageService()->includeLLFile('EXT:core/Resources/Private/Language/locallang_misc.xlf');
+    protected $bynderServiceFactory;
+
+    /**
+     * @var ModuleTemplate
+     */
+    protected $moduleTemplate;
+
+    /**
+     * @var \SplObjectStorage|ResourceStorage[]
+     */
+    protected $bynderStorages;
+
+    public function __construct(
+        BynderServiceFactory $bynderServiceFactory,
+        ModuleTemplate $moduleTemplate,
+        \SplObjectStorage $bynderStorages
+    ) {
+        $this->bynderServiceFactory = $bynderServiceFactory;
+        $this->moduleTemplate = $moduleTemplate;
+        $this->bynderStorages = $bynderStorages;
     }
 
     public function processRequest(ServerRequestInterface $request): ResponseInterface
@@ -59,11 +75,10 @@ class AuthorizationUrlController
                     );
                     $this->assignAccessTokenToView($view, $accessToken);
                 } else {
-                    $bynderStorages = $this->getBynderStorages();
-                    $view->assign('storages', $this->getBynderStorages());
+                    $view->assign('storages', $this->bynderStorages);
 
-                    if (count($bynderStorages) === 1) {
-                        $storage = current($bynderStorages);
+                    if (count($this->bynderStorages) === 1) {
+                        $storage = current($this->bynderStorages);
                         $accessToken = $this->getAccessToken(
                             $this->getBynderStorage($storage->getUid()),
                             $parameters['ext-bynder-code']
@@ -100,35 +115,27 @@ class AuthorizationUrlController
             ->getAccessToken($code);
     }
 
-    /**
-     * @return array|ResourceStorage[]
-     */
-    protected function getBynderStorages(): array
+    protected function getBynderStorage(int $storageUid): ?ResourceStorage
     {
-        return $this->getStorageRepository()->findByStorageType('bynder2');
-    }
+        foreach ($this->bynderStorages as $bynderStorage) {
+            if ($bynderStorage->getUid() === $storageUid) {
+                return $bynderStorage;
+            }
+        }
 
-    protected function getBynderStorage(int $storageUid): ResourceStorage
-    {
-        return $this->getStorageRepository()->findByUid($storageUid);
+        return null;
     }
 
     protected function getBynderService(ResourceStorage $resourceStorage): BynderService
     {
         $storageConfiguration = $resourceStorage->getConfiguration();
-        $configuration = [
+
+        return $this->bynderServiceFactory->getBynderServiceForConfiguration([
             'url' => $storageConfiguration['url'],
             'redirectCallback' => $storageConfiguration['redirectCallback'],
             'clientId' => $storageConfiguration['clientId'],
             'clientSecret' => $storageConfiguration['clientSecret'],
-        ];
-
-        return GeneralUtility::makeInstance(BynderService::class, $configuration);
-    }
-
-    protected function getStorageRepository(): StorageRepository
-    {
-        return GeneralUtility::makeInstance(StorageRepository::class);
+        ]);
     }
 
     protected function getStandaloneView(): StandaloneView

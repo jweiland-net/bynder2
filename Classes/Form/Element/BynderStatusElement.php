@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace JWeiland\Bynder2\Form\Element;
 
 use JWeiland\Bynder2\Service\BynderService;
+use JWeiland\Bynder2\Service\BynderServiceFactory;
 use League\OAuth2\Client\Token\AccessToken;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Core\Service\FlexFormService;
@@ -99,6 +100,13 @@ class BynderStatusElement extends AbstractFormElement
 
     protected function getBynderService(array $configuration): BynderService
     {
-        return GeneralUtility::makeInstance(BynderService::class, $configuration);
+        return $this
+            ->getBynderServiceFactory()
+            ->getBynderServiceForConfiguration($configuration);
+    }
+
+    protected function getBynderServiceFactory(): BynderServiceFactory
+    {
+        return GeneralUtility::makeInstance(BynderServiceFactory::class);
     }
 }

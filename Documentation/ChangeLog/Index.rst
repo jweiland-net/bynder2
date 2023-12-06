@@ -7,6 +7,10 @@
 ChangeLog
 =========
 
+**Version 2.0.4**
+
+- Add BynderServiceFactory to simplify DI
+
 **Version 2.0.3**
 
 - Exclude .github folder in .gitattributes

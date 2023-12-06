@@ -44,10 +44,15 @@ class BynderService implements LoggerAwareInterface
      */
     protected $extConf;
 
+    public function __construct(ExtConf $extConf)
+    {
+        $this->extConf = $extConf;
+    }
+
     /**
      * @throws InvalidBynderConfigurationException
      */
-    public function __construct(array $configuration)
+    public function setConfiguration(array $configuration)
     {
         if (!$this->isValidConfiguration($configuration)) {
             throw new InvalidBynderConfigurationException(
