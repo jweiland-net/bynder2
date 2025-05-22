@@ -114,8 +114,8 @@ class FileUploader
                         // This is where the magic happens. We create all the promises via an Iterator function.
                         $promises = $this->uploadChunkIterator($file, $data['filePath'], $uploadRequestInfo,
                             $numberOfChunks, $chunkNumber);
-                        // After that we batch them all together using each_limit_all, which will guarantee all chunks have been uploaded properly.
-                        $eachPromises = Promise\each_limit_all($promises, self::MAX_CONCURRENT_CHUNKS);
+                        // After that we batch them all together using Each::ofLimitAll, which will guarantee all chunks have been uploaded properly.
+                        $eachPromises = Promise\Each::ofLimitAll($promises, self::MAX_CONCURRENT_CHUNKS);
                         return $eachPromises->then(
                             function ($value) use ($uploadRequestInfo, $chunkNumber) {
                                 return ['requestInfo' => $uploadRequestInfo, 'chunkNumber' => $chunkNumber];
@@ -126,8 +126,8 @@ class FileUploader
                 }
             )
             ->then(
-                function ($value) {
-                    return $this->finalizeUploadAsync($value['requestInfo'], $value['chunkNumber']);
+                function ($value) use ($data) {
+                    return $this->finalizeUploadAsync($value['requestInfo'], $value['chunkNumber'], $data);
                 }
             )
             ->then(
@@ -265,11 +265,12 @@ class FileUploader
      *
      * @param $uploadRequestInfo
      * @param $chunkNumber
+     * @param array $originalData
      *
      * @return Promise\Promise
      * @throws Exception
      */
-    private function finalizeUploadAsync($uploadRequestInfo, $chunkNumber)
+    private function finalizeUploadAsync($uploadRequestInfo, $chunkNumber, $originalData)
     {
         $s3Filename = sprintf("%s/p%d", $uploadRequestInfo['s3_filename'], $chunkNumber);
 
@@ -279,6 +280,11 @@ class FileUploader
             's3_filename' => $s3Filename,
             'chunks' => $chunkNumber,
         ];
+
+        if (isset($originalData['original_filename']) && $originalData['original_filename']) {
+            $data['original_filename'] = $originalData['original_filename'];
+        }
+
         return $this->requestHandler->sendRequestAsync(
             'POST',
             'api/v4/upload/',

@@ -20,9 +20,9 @@
 	"require": {
 		"ext-dom": "*",
 		"ext-libxml": "*",
-		"typo3/cms-core": "^10.4.37 || ^11.5.33",
-		"bynder/bynder-php-sdk": "2.1.5",
-		"league/oauth2-client": "2.6.1"
+		"typo3/cms-core": "^12.4.31",
+		"bynder/bynder-php-sdk": "2.2.6",
+		"league/oauth2-client": "2.8.1"
 	},
 	"require-dev": {
 		"friendsofphp/php-cs-fixer": "^3.0",
