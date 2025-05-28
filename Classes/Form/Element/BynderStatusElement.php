@@ -11,8 +11,11 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Form\Element;
 
+use Bynder\Api\BynderClient;
+use Bynder\Api\Impl\OAuth2\Configuration as AccessTokenConfiguration;
+use JWeiland\Bynder2\Client\BynderClientWrapper;
+use JWeiland\Bynder2\Service\BynderClientFactory;
 use JWeiland\Bynder2\Service\BynderService;
-use JWeiland\Bynder2\Service\BynderServiceFactory;
 use League\OAuth2\Client\Token\AccessToken;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Core\Service\FlexFormService;
@@ -29,44 +32,36 @@ class BynderStatusElement extends AbstractFormElement
         $resultArray = $this->initializeResultArray();
         if (is_string($this->data['databaseRow']['configuration'])) {
             $flexFormService = GeneralUtility::makeInstance(FlexFormService::class);
-            $config = $flexFormService->convertFlexFormContentToArray($this->data['databaseRow']['configuration']);
+            $bynderFalConfiguration = $flexFormService->convertFlexFormContentToArray($this->data['databaseRow']['configuration']);
         } else {
-            $config = [];
-            foreach ($this->data['databaseRow']['configuration']['data']['sDEF']['lDEF'] as $key => $value) {
-                $config[$key] = $value['vDEF'];
-            }
+            $bynderFalConfiguration = array_map(static function ($value): string {
+                return $value['vDEF'];
+            }, $this->data['databaseRow']['configuration']['data']['sDEF']['lDEF']);
         }
 
-        $resultArray['html'] = $this->getHtmlForConnected($config);
+        $resultArray['html'] = $this->getHtmlForConnected($bynderFalConfiguration);
 
         return $resultArray;
     }
 
     /**
-     * Get HTML to show the user, that he is connected with his bynder account
+     * Get HTML to show the user that he is connected with his bynder account
      */
-    public function getHtmlForConnected(array $config): string
+    public function getHtmlForConnected(array $bynderFalConfiguration): string
     {
-        if (
-            isset($config['clientId'], $config['clientSecret'])
-            && $config['clientId'] !== ''
-            && $config['clientSecret'] !== ''
-        ) {
-            if (isset($config['accessToken']) && $config['accessToken'] !== '') {
-                $view = $this->getStandaloneView();
+        $view = $this->getStandaloneView();
 
-                try {
-                    $bynderService = $this->getBynderService($config);
+        if (isset($bynderFalConfiguration['accessToken']) && $bynderFalConfiguration['accessToken'] !== '') {
+            try {
+                $bynderClientWrapper = $this->getBynderClientFactory()->createClientWrapper($bynderFalConfiguration);
+                $view->assignMultiple([
+                    'account' => $this->getBynderService()->getCurrentUser($bynderClientWrapper->getBynderClient()),
+                    'expires' => $this->getExpires($bynderFalConfiguration, $bynderClientWrapper)
+                ]);
 
-                    $view->assign('account', $bynderService->getCurrentUser());
-                    $view->assign('expires', $this->getExpires($config, $bynderService));
-
-                    return $view->render();
-                } catch (\Exception $exception) {
-                    return 'Bynder Error: ' . $exception->getMessage();
-                }
-            } else {
-                return 'Status will be visible after configuring accessToken first';
+                return $view->render();
+            } catch (\Exception $exception) {
+                return 'Bynder Error: ' . $exception->getMessage();
             }
         }
 
@@ -74,15 +69,20 @@ class BynderStatusElement extends AbstractFormElement
     }
 
     /**
-     * This method has to be called AFTER the first bynder request.
-     * That's because the access token will be refreshed if expired while bynder request.
+     * This method should be invoked only *after* completing any Bynder API request.
+     * The reason is that the access token is automatically refreshed during a Bynder request if it has expired.
+     * A Bynder request is required to obtain the updated "expire" value of the access token.
      */
-    protected function getExpires(array $config, BynderService $bynderService): int
+    protected function getExpires(array $bynderFalConfiguration, BynderClientWrapper $bynderClientWrapper): int
     {
-        $expires = $config['expires'];
-        $token = $bynderService->getBynderConfiguration()->getToken();
-        if ($token instanceof AccessToken) {
-            $expires = $token->getExpires();
+        $expires = $bynderFalConfiguration['expires'];
+
+        if (($bynderTokenConfiguration = $bynderClientWrapper->getBynderTokenConfiguration()->getToken())
+            && $bynderTokenConfiguration instanceof AccessTokenConfiguration
+            && ($accessToken = $bynderTokenConfiguration->getToken())
+            && $accessToken instanceof AccessToken
+        ) {
+            $expires = $accessToken->getExpires();
         }
 
         return (int)$expires;
@@ -98,15 +98,21 @@ class BynderStatusElement extends AbstractFormElement
         return $view;
     }
 
-    protected function getBynderService(array $configuration): BynderService
+    protected function getBynderService(): BynderService
     {
-        return $this
-            ->getBynderServiceFactory()
-            ->getBynderServiceForConfiguration($configuration);
+        return GeneralUtility::makeInstance(BynderService::class);
     }
 
-    protected function getBynderServiceFactory(): BynderServiceFactory
+    protected function getBynderClientFactory(): BynderClientFactory
     {
-        return GeneralUtility::makeInstance(BynderServiceFactory::class);
+        return GeneralUtility::makeInstance(BynderClientFactory::class);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function getBynderClient(array $configuration): BynderClient
+    {
+        return $this->getBynderClientFactory()->createClient($configuration);
     }
 }

@@ -35,7 +35,7 @@ call_user_func(static function (): void {
         ];
     }
 
-    // Create cache to speed up page navigation through the files
+    // Create a cache to speed up page navigation through the files
     $extConf = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
         \JWeiland\Bynder2\Configuration\ExtConf::class
     );
@@ -47,7 +47,7 @@ call_user_func(static function (): void {
             = \TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend::class;
     }
 
-    // Create cache to store the file information retrieved from Bynder API
+    // Create a cache to store the file information retrieved from Bynder API
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bynder2_fileinfo']['backend']
         = \TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend::class;
 
@@ -55,6 +55,6 @@ call_user_func(static function (): void {
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Filelist\FileList::class]['className']
         = \JWeiland\Bynder2\Xclass\FileList::class;
 
-    $extractorRegistry = \TYPO3\CMS\Core\Resource\Index\ExtractorRegistry::getInstance();
+    $extractorRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\Index\ExtractorRegistry::class);
     $extractorRegistry->registerExtractionService(\JWeiland\Bynder2\Resource\BynderExtractor::class);
 });

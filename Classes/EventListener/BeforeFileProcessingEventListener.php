@@ -20,10 +20,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class BeforeFileProcessingEventListener
 {
-    /**
-     * @var FrontendInterface
-     */
-    protected $fileInfoCache;
+    protected FrontendInterface $fileInfoCache;
 
     public function __construct()
     {

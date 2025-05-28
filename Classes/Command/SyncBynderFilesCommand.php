@@ -11,72 +11,36 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Command;
 
+use Doctrine\DBAL\Exception;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Resource\Exception\InsufficientFolderAccessPermissionsException;
 use TYPO3\CMS\Core\Resource\Index\Indexer;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-/*
- * Bynder does not work with folders, so all files are on root level. So, it's hard to find the related files
- * as we currently do not have any filtering options in filelist module. The only option you have is: searching.
- * As FAL search is realized on sys_file and sys_file_metadata tables we need a command to sync all files from
+/**
+ * Bynder does not work with folders, so all files are on the root level. So, it's hard to find the related files
+ * as we currently do not have any filtering options in the filelist module. The only option you have is: searching.
+ * As FAL search is realized on sys_file and sys_file_metadata tables, we need a command to sync all files from
  * Bynder into these tables.
  */
 class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    /**
-     * @var OutputInterface
-     */
-    protected $output;
-
-    /**
-     * @var \SplObjectStorage|ResourceStorage[]
-     */
-    protected $bynderStorages;
-
-    /**
-     * @var FrontendInterface
-     */
-    protected $fileInfoCache;
-
-    /**
-     * @var FrontendInterface
-     */
-    protected $pageNavCache;
-
-    /**
-     * Instead of overwriting the constructor of parent Command class
-     * we inject Bynder Storages with DI
-     */
-    public function setBynderStorages(\SplObjectStorage $bynderStorages): void
-    {
-        $this->bynderStorages = $bynderStorages;
-    }
-
-    /**
-     * Instead of overwriting the constructor of parent Command class
-     * we inject FileInfo Cache with DI
-     */
-    public function setFileInfoCache(FrontendInterface $fileInfoCache): void
-    {
-        $this->fileInfoCache = $fileInfoCache;
-    }
-
-    /**
-     * Instead of overwriting the constructor of parent Command class
-     * we inject PageNav Cache with DI
-     */
-    public function setPageNavCache(FrontendInterface $pageNavCache): void
-    {
-        $this->pageNavCache = $pageNavCache;
+    public function __construct(
+        private readonly \SplObjectStorage $bynderStorages,
+        private readonly FrontendInterface $fileInfoCache,
+        private readonly FrontendInterface $pageNavCache,
+    ) {
+        parent::__construct();
     }
 
     protected function configure(): void
@@ -92,25 +56,17 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->output = $output;
-
-        $output->writeln('Clear bynder caches');
-        $this->fileInfoCache->flush();
-        $this->logger->info('Bynder FileInfo cache has been flushed');
-        $this->pageNavCache->flush();
-        $this->logger->info('Bynder PageNav cache has been flushed');
-
         $output->writeln('Start synchronizing bynder files');
-        $this->synchronizeStorages();
+        $this->synchronizeStorages($output);
         $this->logger->info('All Bynder files have been synchronized');
 
         return 0;
     }
 
-    protected function synchronizeStorages(): void
+    protected function synchronizeStorages(OutputInterface $output): void
     {
         if ($this->bynderStorages->count() === 0) {
-            $this->output->writeln('No bynder storages found.');
+            $output->writeln('No bynder storages found.');
             $this->logger->warning('No bynder storages found.');
             return;
         }
@@ -118,17 +74,19 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
         foreach ($this->bynderStorages as $bynderStorage) {
             $this->logger->info('Start synchronizing files of storage with UID: ' . $bynderStorage->getUid());
             $this->logger->debug('If solr or other file extractors are activated indexing will need its time.');
-            $this->synchronizeStorage($bynderStorage);
+            $this->synchronizeStorage($bynderStorage, $output);
             $this->logger->info('Finished synchronizing files of storage with UID: ' . $bynderStorage->getUid());
         }
     }
 
-    protected function synchronizeStorage(ResourceStorage $bynderStorage): void
+    /**
+     * This will retrieve ALL files from Bynder API.
+     * The fileInfo and pageNav caches will be updated,
+     * Detect changes in storage,
+     * Check and mark missing files
+     */
+    protected function synchronizeStorage(ResourceStorage $bynderStorage, OutputInterface $output): void
     {
-        // This will retrieve ALL files from Bynder API.
-        // The fileInfo caches will be updated,
-        // detect changes in storage,
-        // check and mark missing files
         try {
             $this->getIndexer($bynderStorage)->processChangesInStorages();
         } catch (\Exception $e) {
@@ -136,21 +94,24 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
             return;
         }
 
-        $this->output->writeln(
+        $this->removeOldCacheEntries($this->fileInfoCache);
+        $this->removeOldCacheEntries($this->pageNavCache);
+
+        $output->writeln(
             sprintf(
                 'Synchronized %d files in bynder storage %d',
-                $this->countFilesInStorage($bynderStorage),
+                $this->countFilesInStorage($bynderStorage, $output),
                 $bynderStorage->getUid()
             )
         );
     }
 
-    protected function countFilesInStorage(ResourceStorage $storage): int
+    protected function countFilesInStorage(ResourceStorage $storage, OutputInterface $output): int
     {
         try {
             return $storage->countFilesInFolder($storage->getRootLevelFolder());
         } catch (InsufficientFolderAccessPermissionsException $insufficientFolderAccessPermissionsException) {
-            $this->output->writeln('CLI user does not have permission to count files of bynder storage');
+            $output->writeln('CLI user does not have permission to count files of bynder storage');
             $this->logger->error(
                 'CLI user does not have permission to count files of bynder storage',
                 [
@@ -160,6 +121,58 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
         }
 
         return 0;
+    }
+
+    protected function removeOldCacheEntries(FrontendInterface $cache): void
+    {
+        $cacheTags = $this->getSortedCacheTags($cache);
+        if ($cacheTags === []) {
+            $this->logger->info(
+                'Cache is no TYPO3 DB Cache Backend. To update your cache entries you have to clean up the cache entries manually.'
+            );
+            return;
+        }
+
+        // Remove the last entry, as we don't want to remove our just freshly created cache entries
+        array_pop($cacheTags);
+
+        $cache->flushByTags($cacheTags);
+    }
+
+    protected function getSortedCacheTags(FrontendInterface $cache): array
+    {
+        $cacheTable = $this->getCacheTagTable($cache);
+        if ($cacheTable === '') {
+            return [];
+        }
+
+        $connection = $this->getConnectionPool()->getConnectionForTable($cacheTable);
+        $queryResult = $connection->select(
+            ['tag'],
+            $cacheTable,
+            [],
+            [],
+            ['tag' => 'ASC'],
+        );
+
+        try {
+            return $queryResult->fetchAllAssociative();
+        } catch (Exception $e) {
+        }
+
+        return [];
+    }
+
+    protected function getCacheTagTable(FrontendInterface $cache): string
+    {
+        $cacheBackend = $cache->getBackend();
+
+        return $cacheBackend instanceof Typo3DatabaseBackend ? $cacheBackend->getTagsTable() : '';
+    }
+
+    private function getConnectionPool(): ConnectionPool
+    {
+        return GeneralUtility::makeInstance(ConnectionPool::class);
     }
 
     protected function getIndexer(ResourceStorage $storage): Indexer

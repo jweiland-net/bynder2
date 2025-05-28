@@ -6,6 +6,12 @@ services:
 
   JWeiland\Bynder2\:
     resource: '../Classes/*'
+    exclude:
+      - '../Classes/Client/BynderClientWrapper'
+      - '../Classes/Configuration/BynderAccessTokenConfiguration'
+      - '../Classes/Configuration/BynderFalConfiguration'
+      - '../Classes/Configuration/BynderPermanentTokenConfiguration'
+      - '../Classes/Configuration/GuzzleConfiguration'
 
   bynder2.cache.fileinfo:
     class: TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
@@ -22,10 +28,10 @@ services:
     factory: ['@JWeiland\Bynder2\Repository\BynderStorageRepository', 'getBynderStorages']
 
   JWeiland\Bynder2\Command\SyncBynderFilesCommand:
-    calls:
-      - setBynderStorages: ['@bynder2.storages']
-      - setFileInfoCache: ['@bynder2.cache.fileinfo']
-      - setPageNavCache: ['@bynder2.cache.pagenav']
+    arguments:
+      $bynderStorages: '@bynder2.storages'
+      $fileInfoCache: '@bynder2.cache.fileinfo'
+      $pageNavCache: '@bynder2.cache.pagenav'
     tags:
       - {name: 'console.command', command: 'fal:bynder:sync', schedulable: true}
 
@@ -47,14 +53,13 @@ services:
       - name: event.listener
         event: TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent
 
-  # Called by makeInstance in various classes
-  JWeiland\Bynder2\Service\BynderServiceFactory:
+  # Called by makeInstance from EXT:backend form elements
+  JWeiland\Bynder2\Service\BynderClientFactory:
     public: true
 
-  # Called by makeInstance in BynderServiceFactory
+  # Called by makeInstance from EXT:backend form elements
   JWeiland\Bynder2\Service\BynderService:
     public: true
-    shared: true
 
   # Called by makeInstance in BynderDriver
   JWeiland\Bynder2\Utility\OrderingUtility:
