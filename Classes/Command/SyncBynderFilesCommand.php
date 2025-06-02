@@ -11,19 +11,12 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Command;
 
-use Doctrine\DBAL\Exception;
+use JWeiland\Bynder2\Service\BynderSynchronization;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use TYPO3\CMS\Core\Cache\Backend\Typo3DatabaseBackend;
-use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Resource\Exception\InsufficientFolderAccessPermissionsException;
-use TYPO3\CMS\Core\Resource\Index\Indexer;
-use TYPO3\CMS\Core\Resource\ResourceStorage;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Bynder does not work with folders, so all files are on the root level. So, it's hard to find the related files
@@ -37,8 +30,7 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
 
     public function __construct(
         private readonly \SplObjectStorage $bynderStorages,
-        private readonly FrontendInterface $fileInfoCache,
-        private readonly FrontendInterface $pageNavCache,
+        private readonly BynderSynchronization $bynderSynchronization,
     ) {
         parent::__construct();
     }
@@ -74,109 +66,8 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
         foreach ($this->bynderStorages as $bynderStorage) {
             $this->logger->info('Start synchronizing files of storage with UID: ' . $bynderStorage->getUid());
             $this->logger->debug('If solr or other file extractors are activated indexing will need its time.');
-            $this->synchronizeStorage($bynderStorage, $output);
+            $this->bynderSynchronization->synchronizeStorage($bynderStorage);
             $this->logger->info('Finished synchronizing files of storage with UID: ' . $bynderStorage->getUid());
         }
-    }
-
-    /**
-     * This will retrieve ALL files from Bynder API.
-     * The fileInfo and pageNav caches will be updated,
-     * Detect changes in storage,
-     * Check and mark missing files
-     */
-    protected function synchronizeStorage(ResourceStorage $bynderStorage, OutputInterface $output): void
-    {
-        try {
-            $this->getIndexer($bynderStorage)->processChangesInStorages();
-        } catch (\Exception $e) {
-            $this->logger->error('TYPO3 indexer error: ' . $e->getMessage(), ['exception' => $e]);
-            return;
-        }
-
-        $this->removeOldCacheEntries($this->fileInfoCache);
-        $this->removeOldCacheEntries($this->pageNavCache);
-
-        $output->writeln(
-            sprintf(
-                'Synchronized %d files in bynder storage %d',
-                $this->countFilesInStorage($bynderStorage, $output),
-                $bynderStorage->getUid()
-            )
-        );
-    }
-
-    protected function countFilesInStorage(ResourceStorage $storage, OutputInterface $output): int
-    {
-        try {
-            return $storage->countFilesInFolder($storage->getRootLevelFolder());
-        } catch (InsufficientFolderAccessPermissionsException $insufficientFolderAccessPermissionsException) {
-            $output->writeln('CLI user does not have permission to count files of bynder storage');
-            $this->logger->error(
-                'CLI user does not have permission to count files of bynder storage',
-                [
-                    'exception' => $insufficientFolderAccessPermissionsException,
-                ]
-            );
-        }
-
-        return 0;
-    }
-
-    protected function removeOldCacheEntries(FrontendInterface $cache): void
-    {
-        $cacheTags = $this->getSortedCacheTags($cache);
-        if ($cacheTags === []) {
-            $this->logger->info(
-                'Cache is no TYPO3 DB Cache Backend. To update your cache entries you have to clean up the cache entries manually.'
-            );
-            return;
-        }
-
-        // Remove the last entry, as we don't want to remove our just freshly created cache entries
-        array_pop($cacheTags);
-
-        $cache->flushByTags($cacheTags);
-    }
-
-    protected function getSortedCacheTags(FrontendInterface $cache): array
-    {
-        $cacheTable = $this->getCacheTagTable($cache);
-        if ($cacheTable === '') {
-            return [];
-        }
-
-        $connection = $this->getConnectionPool()->getConnectionForTable($cacheTable);
-        $queryResult = $connection->select(
-            ['tag'],
-            $cacheTable,
-            [],
-            [],
-            ['tag' => 'ASC'],
-        );
-
-        try {
-            return $queryResult->fetchAllAssociative();
-        } catch (Exception $e) {
-        }
-
-        return [];
-    }
-
-    protected function getCacheTagTable(FrontendInterface $cache): string
-    {
-        $cacheBackend = $cache->getBackend();
-
-        return $cacheBackend instanceof Typo3DatabaseBackend ? $cacheBackend->getTagsTable() : '';
-    }
-
-    private function getConnectionPool(): ConnectionPool
-    {
-        return GeneralUtility::makeInstance(ConnectionPool::class);
-    }
-
-    protected function getIndexer(ResourceStorage $storage): Indexer
-    {
-        return GeneralUtility::makeInstance(Indexer::class, $storage);
     }
 }

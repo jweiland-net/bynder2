@@ -12,33 +12,24 @@ declare(strict_types=1);
 namespace JWeiland\Bynder2\EventListener;
 
 use JWeiland\Bynder2\Driver\BynderDriver;
-use JWeiland\Bynder2\Service\BynderClientFactory;
-use JWeiland\Bynder2\Service\BynderService;
 use TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent;
+use TYPO3\CMS\Core\Resource\FileInterface;
 
 class GeneratePublicUrlForResourceEventListener
 {
-    public function __construct(
-        private readonly BynderClientFactory $bynderClientFactory,
-        private readonly BynderService $bynderService,
-    ) {}
-
     public function __invoke(GeneratePublicUrlForResourceEvent $event): void
     {
         $bynderDriver = $event->getDriver();
+        $file = $event->getResource();
+
         if (!$bynderDriver instanceof BynderDriver) {
             return;
         }
 
-        // Customer has searched for keywords that result in thousands of files. As we currently do not cache the
-        // publicUrl, rendering of the file list needs ages, because for each file the Bynder API has to be called
-        // to get the public URL. Set publicUrl to empty string here, will prevent Fluid from rendering
-        // the public URL. See EXT:filelist/Resources/Private/Templates/FileList/Search.html.
-        $publicUrl = $this->bynderService->getCdnDownloadUrl(
-            $this->bynderClientFactory->createClient($event->getStorage()->getConfiguration()),
-            $event->getResource()->getIdentifier()
-        );
+        if (!$file instanceof FileInterface) {
+            return;
+        }
 
-        $event->setPublicUrl($publicUrl);
+        $event->setPublicUrl($file->getProperty('bynder2_thumb_webimage'));
     }
 }

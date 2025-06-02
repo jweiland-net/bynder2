@@ -16,22 +16,23 @@ services:
   bynder2.cache.fileinfo:
     class: TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
     factory: ['@TYPO3\CMS\Core\Cache\CacheManager', 'getCache']
-    arguments: ['bynder2_fileinfo']
-
-  bynder2.cache.pagenav:
-    class: TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
-    factory: ['@TYPO3\CMS\Core\Cache\CacheManager', 'getCache']
-    arguments: ['bynder2_pagenav']
+    arguments: ['bynder2_file_response']
 
   bynder2.storages:
     class: SplObjectStorage
     factory: ['@JWeiland\Bynder2\Repository\BynderStorageRepository', 'getBynderStorages']
 
+  bynder2.qb.sys_file:
+    class: 'TYPO3\CMS\Core\Database\Query\QueryBuilder'
+    factory:
+      - '@TYPO3\CMS\Core\Database\ConnectionPool'
+      - 'getQueryBuilderForTable'
+    arguments:
+      - 'sys_file'
+
   JWeiland\Bynder2\Command\SyncBynderFilesCommand:
     arguments:
       $bynderStorages: '@bynder2.storages'
-      $fileInfoCache: '@bynder2.cache.fileinfo'
-      $pageNavCache: '@bynder2.cache.pagenav'
     tags:
       - {name: 'console.command', command: 'fal:bynder:sync', schedulable: true}
 
@@ -43,7 +44,13 @@ services:
     arguments:
       - $bynderStorages: ['@bynder2.storages']
 
-  JWeiland\Bynder2\EventListener\BeforeFileProcessingEventListener:
+  # Called by makeInstance by TYPO3 ExtractorService
+  JWeiland\Bynder2\Resource\BynderExtractor:
+    public: true
+    arguments:
+      $cache: '@bynder2.cache.fileinfo'
+
+  JWeiland\Bynder2\EventListener\UseBynderCdnForProcessingUrlEventListener:
     tags:
       - name: event.listener
         event: TYPO3\CMS\Core\Resource\Event\BeforeFileProcessingEvent
@@ -53,6 +60,12 @@ services:
       - name: event.listener
         event: TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent
 
+  # Called by makeInstance in BynderDriver
+  JWeiland\Bynder2\Repository\FileRepository:
+    public: true
+    arguments:
+      $queryBuilder: '@bynder2.qb.sys_file'
+
   # Called by makeInstance from EXT:backend form elements
   JWeiland\Bynder2\Service\BynderClientFactory:
     public: true
@@ -60,6 +73,11 @@ services:
   # Called by makeInstance from EXT:backend form elements
   JWeiland\Bynder2\Service\BynderService:
     public: true
+
+  # Called by makeInstance from EXT:backend form elements
+  JWeiland\Bynder2\Service\BynderSynchronization:
+    arguments:
+      $cache: '@bynder2.cache.fileinfo'
 
   # Called by makeInstance in BynderDriver
   JWeiland\Bynder2\Utility\OrderingUtility:
