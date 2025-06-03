@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2022-05-19T10:34:04Z" product-name="bynder2">
+		<header/>
+		<body>
+			<trans-unit id="bynder2_tab" xml:space="preserve">
+				<source>Bynder</source>
+			</trans-unit>
+			<trans-unit id="bynder2_thumb_mini" xml:space="preserve">
+				<source>Bynder Thumbnail "mini"</source>
+			</trans-unit>
+			<trans-unit id="bynder2_thumb_mini.description" xml:space="preserve">
+				<source>Provide the public Bynder URL for thumbnails with dimensions of 80 pixels or smaller in both width and height.</source>
+			</trans-unit>
+			<trans-unit id="bynder2_thumb_thul" xml:space="preserve">
+				<source>Bynder Thumbnail "thul"</source>
+			</trans-unit>
+			<trans-unit id="bynder2_thumb_thul.description" xml:space="preserve">
+				<source>Provide the public Bynder URL for thumbnails with dimensions of 250 pixels or smaller in both width and height.</source>
+			</trans-unit>
+			<trans-unit id="bynder2_thumb_webimage" xml:space="preserve">
+				<source>Bynder Thumbnail "webimage"</source>
+			</trans-unit>
+			<trans-unit id="bynder2_thumb_webimage.description" xml:space="preserve">
+				<source>Provide the public Bynder URL for thumbnails with dimensions of 800 pixels or smaller in both width and height.</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

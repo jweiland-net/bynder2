@@ -16,8 +16,8 @@
 				<target>Permanent Token</target>
 			</trans-unit>
 			<trans-unit id="permanentToken.description" xml:space="preserve">
-				<source>If you have a permanent token at hand, please enter it here. It is not necessary to fill in the following fields</source>
-				<target>Falls Sie einen permanenten token zur Hand haben, bitte hier eintragen. Es ist nicht erforderlich die nachfolgenden Felder zu befüllen</target>
+				<source>If you provide the permanent token here, there is no need to complete the subsequent fields.</source>
+				<target>Wenn Sie das permanente Token eintragen, ist es nicht erforderlich, die nachfolgenden Felder auszufüllen</target>
 			</trans-unit>
 			<trans-unit id="redirectCallback" xml:space="preserve">
 				<source>Redirect Callback</source>

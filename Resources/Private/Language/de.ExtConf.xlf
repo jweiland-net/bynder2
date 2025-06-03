@@ -7,10 +7,6 @@
 				<source>Number of files in the file browser (PopUp): Please select a value up to max. 1000, because the Bynder API does not allow a higher value</source>
 				<target>Anzahl Dateien im Dateibrowser (PopUp): Bitte wählen Sie einen Wert bis max. 1000, da die Bynder API keinen höheren Wert erlaubt</target>
 			</trans-unit>
-			<trans-unit id="useTransientCache" xml:space="preserve">
-				<source>Use transient cache: By default we cache all files persistent. With each scheduler run, we will clear the cache. If you need the new files instant and you can not wait until next scheduler run, please activate this option to get fresh data.</source>
-				<target>Temporären Cache verwenden: Standardmäßig werden alle Dateien dauerhaft zwischengespeichert. Bei jedem Planerlauf wird der Cache geleert. Wenn Sie die neuen Dateien sofort benötigen und nicht bis zum nächsten Schedulerlauf warten können, aktivieren Sie bitte diese Option, um frische Daten zu erhalten.</target>
-			</trans-unit>
 		</body>
 	</file>
 </xliff>

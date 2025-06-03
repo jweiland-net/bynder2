@@ -11,15 +11,20 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Resource;
 
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Index\ExtractorInterface;
 
-/*
- * As Bynder is no local storage we have to use our own extractor service to retrieve
- * metadata for sys_file_metadata like width, height, ...
+/**
+ * Since Bynder does not provide local storage, a custom extractor service is utilized
+ * to retrieve metadata such as width, height, and copyright for sys_file_metadata.
  */
 class BynderExtractor implements ExtractorInterface
 {
+    public function __construct(
+        private readonly FrontendInterface $cache,
+    ) {}
+
     public function getFileTypeRestrictions(): array
     {
         return [];
@@ -47,20 +52,29 @@ class BynderExtractor implements ExtractorInterface
         return true;
     }
 
+    /**
+     * @param array $previousExtractedData Contains the extracted data from possible previous extractors.
+     */
     public function extractMetaData(File $file, array $previousExtractedData = []): array
     {
-        $fileInfo = $file->getStorage()->getFileInfoByIdentifier(
-            $file->getIdentifier(),
-            [
-                'title',
-                'description',
-                'width',
-                'height',
-                'copyright',
-                'keywords',
-            ]
-        );
+        if (!$this->cache->has($file->getIdentifier())) {
+            return [];
+        }
 
-        return array_merge($previousExtractedData, $fileInfo);
+        $fileResponse = $this->cache->get($file->getIdentifier());
+
+        $fileMetaData = [
+            'title' => $fileResponse['name'] ?? '',
+            'description' => $fileResponse['description'] ?? '',
+            'width' => $fileResponse['width'] ?? '',
+            'height' => $fileResponse['height'] ?? '',
+            'copyright' => $fileResponse['copyright'] ?? '',
+            'keywords' => implode(', ', $fileResponse['tags'] ?? []),
+            'bynder2_thumb_mini' => $fileResponse['thumbnails']['mini'] ?? '',
+            'bynder2_thumb_thul' => $fileResponse['thumbnails']['thul'] ?? '',
+            'bynder2_thumb_webimage' => $fileResponse['thumbnails']['webimage'] ?? '',
+        ];
+
+        return array_merge($previousExtractedData, $fileMetaData);
     }
 }

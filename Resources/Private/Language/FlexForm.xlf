@@ -13,7 +13,7 @@
 				<source>Permanent Token</source>
 			</trans-unit>
 			<trans-unit id="permanentToken.description" xml:space="preserve">
-				<source>If you have a permanent token at hand, please enter it here. It is not necessary to fill in the following fields</source>
+				<source>If you provide the permanent token here, there is no need to complete the subsequent fields.</source>
 			</trans-unit>
 			<trans-unit id="redirectCallback" xml:space="preserve">
 				<source>Redirect Callback</source>

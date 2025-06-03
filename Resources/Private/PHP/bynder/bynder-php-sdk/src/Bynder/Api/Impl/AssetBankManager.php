@@ -35,6 +35,42 @@ class AssetBankManager
     }
 
     /**
+     * Gets a list of all users, params sent in $query will filter the results.
+     *
+     * @param  array  $query
+     * @return \GuzzleHttp\Promise\Promise with a list of Users.
+     * @throws \GuzzleHttp\Exception\RequestException When request fails.
+     */
+    public function getUsers($query = null)
+    {
+        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/users/',
+            ['query' => $query]
+        );
+    }
+
+    /**
+     * Gets a list of all available security profiles.
+     *
+     * @return \GuzzleHttp\Promise\Promise with a list of all Profiles.
+     * @throws \GuzzleHttp\Exception\RequestException When request fails.
+     */
+    public function getProfiles()
+    {
+        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/profiles/');
+    }
+
+    /**
+     * Gets account information
+     *
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     * @throws \Exception
+     */
+    public function getAccount()
+    {
+        return $this->requestHandler->sendRequestAsync('GET', "api/v4/account/");
+    }
+
+    /**
      * Gets a list of all available brands.
      *
      * @return \GuzzleHttp\Promise\Promise with a list of all Brands.
@@ -128,6 +164,57 @@ class AssetBankManager
     {
         return $this->requestHandler->sendRequestAsync('GET', 'api/v4/metaproperties/options/',
             ['query' => $query]
+        );
+    }
+
+    /**
+     * Gets a list of metaproperty options.
+     *
+     * @param  string  $propertyId  Metaproperty id
+     * @param  array  $query  Associative array of parameters to filter the results.
+     * @return \GuzzleHttp\Promise\Promise
+     * @throws \GuzzleHttp\Exception\RequestException
+     */
+    public function getMetapropertyOptionsById($propertyId, $query)
+    {
+        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/metaproperties/' . $propertyId . '/options/',
+            ['query' => $query]
+        );
+    }
+
+    /**
+     * Creates an option for a metaproperty.
+     *
+     * @param string $metaPropId
+     * @param array $data
+     * @return \GuzzleHttp\Promise\Promise
+     * @throws \Exception
+     */
+    public function createMetaPropertyOption($metaPropId, $data)
+    {
+        return $this->requestHandler->sendRequestAsync(
+            'POST',
+            sprintf('api/v4/metaproperties/%s/options/', $metaPropId),
+            ['form_params' => ['data' => json_encode($data)]]
+        );
+    }
+
+    /**
+     * Modifies existing metaproperty option.
+     *
+     * @param string $metaPropId
+     * @param string $optionId
+     * @param array  $data
+     *
+     * @return \GuzzleHttp\Promise\Promise
+     * @throws \Exception
+     */
+    public function modifyMetaPropertyOption($metaPropId, $optionId, $data)
+    {
+        return $this->requestHandler->sendRequestAsync(
+            'POST',
+            sprintf('api/v4/metaproperties/%s/options/%s/', $metaPropId, $optionId),
+            ['form_params' => ['data' => json_encode($data)]]
         );
     }
 
@@ -346,12 +433,27 @@ class AssetBankManager
      *
      * @param  $query
      * @return \GuzzleHttp\Promise\Promise
-     * @throws \GuzzleHttp\Exception\RequestException 
+     * @throws \GuzzleHttp\Exception\RequestException
      */
     public function deleteUsage($query)
     {
         return $this->requestHandler->sendRequestAsync('DELETE', 'api/media/usage',
             ['query' => $query]
+        );
+    }
+
+    /**
+     * Synchronizes asset usages
+     *
+     * @param array $data
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function syncAssetUsage($data)
+    {
+        return $this->requestHandler->sendRequestAsync('POST', 'api/media/usage/sync',
+            ['json' => $data]
         );
     }
 

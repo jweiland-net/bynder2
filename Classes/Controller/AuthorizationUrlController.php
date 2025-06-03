@@ -11,8 +11,7 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Controller;
 
-use JWeiland\Bynder2\Service\BynderService;
-use JWeiland\Bynder2\Service\BynderServiceFactory;
+use JWeiland\Bynder2\Service\BynderClientFactory;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -23,35 +22,16 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 
-/*
+/**
  * Show code (to retrieve an access token) after a Bynder App was authorized and redirectCallback was called.
  */
 class AuthorizationUrlController
 {
-    /**
-     * @var BynderServiceFactory
-     */
-    protected $bynderServiceFactory;
-
-    /**
-     * @var ModuleTemplate
-     */
-    protected $moduleTemplate;
-
-    /**
-     * @var \SplObjectStorage|ResourceStorage[]
-     */
-    protected $bynderStorages;
-
     public function __construct(
-        BynderServiceFactory $bynderServiceFactory,
-        ModuleTemplate $moduleTemplate,
-        \SplObjectStorage $bynderStorages
-    ) {
-        $this->bynderServiceFactory = $bynderServiceFactory;
-        $this->moduleTemplate = $moduleTemplate;
-        $this->bynderStorages = $bynderStorages;
-    }
+        protected readonly ModuleTemplate $moduleTemplate,
+        protected readonly BynderClientFactory $bynderClientFactory,
+        protected readonly \SplObjectStorage $bynderStorages,
+    ) {}
 
     public function processRequest(ServerRequestInterface $request): ResponseInterface
     {
@@ -78,7 +58,7 @@ class AuthorizationUrlController
                     $view->assign('storages', $this->bynderStorages);
 
                     if (count($this->bynderStorages) === 1) {
-                        $storage = current($this->bynderStorages);
+                        $storage = $this->bynderStorages->current();
                         $accessToken = $this->getAccessToken(
                             $this->getBynderStorage($storage->getUid()),
                             $parameters['ext-bynder-code']
@@ -110,8 +90,8 @@ class AuthorizationUrlController
 
     protected function getAccessToken(ResourceStorage $resourceStorage, string $code): AccessToken
     {
-        return $this->getBynderService($resourceStorage)
-            ->getBynderClient()
+        return $this->bynderClientFactory
+            ->createClient($resourceStorage->getConfiguration())
             ->getAccessToken($code);
     }
 
@@ -124,18 +104,6 @@ class AuthorizationUrlController
         }
 
         return null;
-    }
-
-    protected function getBynderService(ResourceStorage $resourceStorage): BynderService
-    {
-        $storageConfiguration = $resourceStorage->getConfiguration();
-
-        return $this->bynderServiceFactory->getBynderServiceForConfiguration([
-            'url' => $storageConfiguration['url'],
-            'redirectCallback' => $storageConfiguration['redirectCallback'],
-            'clientId' => $storageConfiguration['clientId'],
-            'clientSecret' => $storageConfiguration['clientSecret'],
-        ]);
     }
 
     protected function getStandaloneView(): StandaloneView

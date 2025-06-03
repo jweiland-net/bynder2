@@ -11,37 +11,54 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Configuration;
 
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationExtensionNotConfiguredException;
+use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\MathUtility;
 
 /*
- * This class streamlines all settings from extension manager
+ * This class streamlines all settings from the extension manager
  */
-class ExtConf implements SingletonInterface
+#[Autoconfigure(constructor: 'create')]
+final class ExtConf
 {
-    /**
-     * @var int
-     */
-    protected $numberOfFilesInFileBrowser = 100;
+    private const EXT_KEY = 'bynder2';
 
-    /**
-     * @var bool
-     */
-    protected $useTransientCache = false;
+    private const DEFAULT_SETTINGS = [
+        'numberOfFilesInFileBrowser' => 100,
+        'useTransientCache' => false,
+    ];
 
-    public function __construct(ExtensionConfiguration $extensionConfiguration)
+    public function __construct(
+        private readonly int $numberOfFilesInFileBrowser = self::DEFAULT_SETTINGS['numberOfFilesInFileBrowser'],
+        private readonly bool $useTransientCache = self::DEFAULT_SETTINGS['useTransientCache'],
+    ) {}
+
+    public static function create(ExtensionConfiguration $extensionConfiguration): self
     {
-        $extConf = $extensionConfiguration->get('bynder2');
-        if (is_array($extConf)) {
-            // call setter method foreach configuration entry
-            foreach ($extConf as $key => $value) {
-                $methodName = 'set' . ucfirst($key);
-                if (method_exists($this, $methodName)) {
-                    $this->$methodName((string)$value);
-                }
-            }
+        $extensionSettings = self::DEFAULT_SETTINGS;
+
+        // Overwrite default extension settings with values from EXT_CONF
+        try {
+            $extensionSettings = array_merge(
+                $extensionSettings,
+                $extensionConfiguration->get(self::EXT_KEY),
+            );
+        } catch (ExtensionConfigurationExtensionNotConfiguredException|ExtensionConfigurationPathDoesNotExistException) {
         }
+
+        $extensionSettings['numberOfFilesInFileBrowser'] = MathUtility::forceIntegerInRange(
+            $extensionSettings['numberOfFilesInFileBrowser'],
+            1,
+            1000,
+            100
+        );
+
+        return new self(
+            numberOfFilesInFileBrowser: $extensionSettings['numberOfFilesInFileBrowser'],
+            useTransientCache: (bool)$extensionSettings['useTransientCache'],
+        );
     }
 
     public function getNumberOfFilesInFileBrowser(): int
@@ -49,23 +66,8 @@ class ExtConf implements SingletonInterface
         return $this->numberOfFilesInFileBrowser;
     }
 
-    public function setNumberOfFilesInFileBrowser(string $numberOfFilesInFileBrowser): void
-    {
-        $this->numberOfFilesInFileBrowser = MathUtility::forceIntegerInRange(
-            (int)$numberOfFilesInFileBrowser,
-            1,
-            1000,
-            100
-        );
-    }
-
     public function getUseTransientCache(): bool
     {
         return $this->useTransientCache;
-    }
-
-    public function setUseTransientCache(string $useTransientCache): void
-    {
-        $this->useTransientCache = (bool)$useTransientCache;
     }
 }
