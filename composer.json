@@ -3,7 +3,12 @@
 	"type": "typo3-cms-extension",
 	"description": "Bynder FAL driver for TYPO3 CMS",
 	"license": "GPL-2.0-or-later",
-	"keywords": ["typo3", "TYPO3 CMS", "bynder", "fal"],
+	"keywords": [
+		"typo3",
+		"TYPO3 CMS",
+		"bynder",
+		"fal"
+	],
 	"homepage": "https://jweiland.net",
 	"authors": [
 		{
@@ -24,6 +29,13 @@
 		"bynder/bynder-php-sdk": "2.2.6",
 		"league/oauth2-client": "2.8.1"
 	},
+	"require-dev": {
+		"ergebnis/composer-normalize": "^2.44",
+		"phpstan/phpstan": "^1.10",
+		"phpunit/phpunit": "^10.5",
+		"typo3/coding-standards": "^0.8",
+		"typo3/testing-framework": "^8.2"
+	},
 	"replace": {
 		"typo3-ter/bynder2": "self.version"
 	},
@@ -41,13 +53,18 @@
 	},
 	"config": {
 		"allow-plugins": {
+			"ergebnis/composer-normalize": true,
 			"typo3/class-alias-loader": true,
 			"typo3/cms-composer-installers": true
-		}
+		},
+		"bin-dir": ".Build/bin",
+		"vendor-dir": ".Build/vendor"
 	},
 	"extra": {
 		"typo3/cms": {
-			"extension-key": "bynder2"
+			"app-dir": ".Build",
+			"extension-key": "bynder2",
+			"web-dir": ".Build/public"
 		}
 	}
 }
