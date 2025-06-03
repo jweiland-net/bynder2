@@ -1,7 +1,4 @@
-﻿.. include:: ../../Includes.txt
-
-
-.. _record:
+﻿..  _record:
 
 ======
 Record
@@ -16,39 +13,7 @@ Permanent Token
 Follow this configuration path, if you have a permanent token available.
 You can request a permanent token from Bynder Support: https://support.bynder.com/hc/en-us/articles/360013875300-Permanent-Tokens
 
-.. rst-class:: bignums
-
-1. Create new file storage
-
-   Create new file storage record `sys_file_storage` on root page (page with UID 0) and give it a name.
-
-2. Storage type
-
-   Switch storage type to `Bynder`
-
-3. Add Bynder domain
-
-   Set Bynder domain. Example: `domain.bynder.com`
-
-   .. hint::
-
-      Do not prefix the domain with http:// nor https://
-
-4. Permanent Token
-
-   Set permanent token you have get from Bynder Support
-
-5. Set temporary folder
-
-   `bynder2` can not write files to Bynder, so you have to use another folder for temporary files. Please set
-   `Folder for manipulated and temporary images etc.` to something like `1:/_processed_/`.
-
-Access Token
-------------
-
-If you don't have access to permanent tokens you have to configure Bynder storage with access token.
-
-.. rst-class:: bignums
+..  rst-class:: bignums
 
 1.  Create new file storage
 
@@ -64,7 +29,39 @@ If you don't have access to permanent tokens you have to configure Bynder storag
 
     .. hint::
 
-       Do not prefix the domain with http:// nor https://
+        Do not prefix the domain with http:// nor https://
+
+4.  Permanent Token
+
+    Set permanent token you have get from Bynder Support
+
+5.  Set temporary folder
+
+    `bynder2` can not write files to Bynder, so you have to use another folder for temporary files. Please set
+    `Folder for manipulated and temporary images etc.` to something like `1:/_processed_/`.
+
+Access Token
+------------
+
+If you don't have access to permanent tokens you have to configure Bynder storage with access token.
+
+..  rst-class:: bignums
+
+1.  Create new file storage
+
+    Create new file storage record `sys_file_storage` on root page (page with UID 0) and give it a name.
+
+2.  Storage type
+
+    Switch storage type to `Bynder`
+
+3.  Add Bynder domain
+
+    Set Bynder domain. Example: `domain.bynder.com`
+
+    ..  hint::
+
+        Do not prefix the domain with http:// nor https://
 
 4.  Add Redirect Callback
 
@@ -94,8 +91,8 @@ If you don't have access to permanent tokens you have to configure Bynder storag
 
 10. Set temporary folder
 
-   `bynder2` can not write files to Bynder, so you have to use another folder for temporary files. Please set
-   `Folder for manipulated and temporary images etc.` to something like `1:/_processed_/`.
+    `bynder2` can not write files to Bynder, so you have to use another folder for temporary files. Please set
+    `Folder for manipulated and temporary images etc.` to something like `1:/_processed_/`.
 
 11. Save
 

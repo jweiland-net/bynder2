@@ -1,7 +1,4 @@
-.. include:: ../../Includes.txt
-
-
-.. _upgrade:
+..  _upgrade:
 
 Upgrade
 =======

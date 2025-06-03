@@ -1,7 +1,4 @@
-.. include:: Includes.txt
-
-
-.. _links:
+..  _links:
 
 Links
 -----
@@ -12,13 +9,13 @@ You may want to remove this file if all important links are already handled in
 Settings.cfg.
 
 :Packagist:
-   https://packagist.org/packages/jweiland/bynder2
+    https://packagist.org/packages/jweiland/bynder2
 
 :TER:
-   https://extensions.typo3.org/extension/bynder2/
+    https://extensions.typo3.org/extension/bynder2/
 
 :Issues:
-   https://github.com/jweiland-net/bynder2/issues
+    https://github.com/jweiland-net/bynder2/issues
 
 :GitHub Repository:
-   https://github.com/jweiland-net/bynder2
+    https://github.com/jweiland-net/bynder2

@@ -1,7 +1,4 @@
-﻿.. include:: ../../Includes.txt
-
-
-.. _extensionSettings:
+﻿..  _extensionSettings:
 
 ==================
 Extension Settings

@@ -1,8 +1,4 @@
-.. include:: ../Includes.txt
-
-
-
-.. _installation:
+..  _installation:
 
 ============
 Installation
@@ -12,10 +8,10 @@ Target group: **Administrators**
 
 The extension needs to be installed like any other extension of TYPO3 CMS:
 
-#. Visit ExtensionManager
+#.  Visit ExtensionManager
 
-#. Switch over to `Get Extensions`
+#.  Switch over to `Get Extensions`
 
-#. Search for `bynder2`
+#.  Search for `bynder2`
 
-#. Install extension
+#.  Install extension

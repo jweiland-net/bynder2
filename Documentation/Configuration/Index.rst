@@ -1,7 +1,4 @@
-.. include:: ../Includes.txt
-
-
-.. _configuration:
+..  _configuration:
 
 =============
 Configuration
@@ -10,8 +7,8 @@ Configuration
 This chapter describes the various configuration settings of bynder2.
 
 
-.. toctree::
-   :maxdepth: 2
+..  toctree::
+    :maxdepth: 2
 
-   Record/Index
-   Extension/Index
+    Record/Index
+    Extension/Index
