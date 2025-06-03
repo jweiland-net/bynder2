@@ -4,69 +4,102 @@
 ChangeLog
 =========
 
-**Version 3.0.0**
+Version 3.0.0 Release Notes
+===========================
 
--   Add TYPO3 12 compatibility
--   File synchronization will be done with scheduler task only
--   Performance: Use CDN thumbnail (mini) from Bynder for preview in BE
--   Performance: Use CDN thumbnail (webimage) from Bynder for public URL in BE
--   Use sys_file table as base in bynder driver
--   Remove compatibility of older TYPO3 versions
+#.  **Compatibility Enhancements**
 
-**Version 2.0.4**
+    *   Added compatibility for TYPO3 version 12.
+    *   Removed support for older TYPO3 versions to streamline future development.
 
--   Add BynderServiceFactory to simplify DI
+#.  **File Synchronization**
 
-**Version 2.0.3**
+    *   File synchronization will now exclusively be handled via scheduler tasks to enhance stability
+        and reduce complexity.
 
--   Exclude .github folder in .gitattributes
--   Update .gitignore file
+#.  **Performance Improvements**
 
-**Version 2.0.2**
+    *   Implemented CDN thumbnail (`mini`) from Bynder for backend previews,
+        significantly improving preview performance.
+    *   Utilized CDN thumbnail (`webimage`) from Bynder for public URLs in the backend,
+        ensuring faster and more reliable access.
 
--   Add logger to BynderService and SyncBynderFilesCommand
--   Add specific log file for EXT:bynder2
--   Use PHP generator/yield to reduce memory while retrieving thousands of files
--   Inject TYPO3 Guzzle config from TYPO3_CONF_VARS/HTTP to BynderClient
+#.  **Technical Updates**
 
-**Version 2.0.1**
+    *   Switched the Bynder driver to use the `sys_file` table as a foundational data source.
+    *   Converted the `fileinfo` cache to a transient cache. This cache now facilitates the transfer
+        of file responses between objects without long-term storage.
 
--   Update ext icon
--   Update title in documentation
--   Remove minimal example from documentation
+#.  **Deprecated Features**
 
-**Version 2.0.0**
+    *   Removed page navigation cache (`pagenav cache`) functionality to improve responsiveness
+        and adaptability.
 
--   Update to new Bynder PHP SDK
--   Make use of new OAuth 2.0 authorization
+Version 2.0.4 Release Notes
+===========================
 
-**Version 1.0.7**
+*   Add BynderServiceFactory to simplify DI
 
--   Move all bynder calls into its own BynderService
--   Catch various Exceptions of Bynder calls
--   Better usage of caches
--   Use FAL indexer to fetch all files and mark missing ones
--   Add OrderingUtility
+Version 2.0.3 Release Notes
+===========================
 
-**Version 1.0.6**
+*   Exclude .github folder in .gitattributes
+*   Update .gitignore file
 
--   Clear the two new caches in sync command
+Version 2.0.2 Release Notes
+===========================
 
-**Version 1.0.5**
+*   Add logger to BynderService and SyncBynderFilesCommand
+*   Add specific log file for EXT:bynder2
+*   Use PHP generator/yield to reduce memory while retrieving thousands of files
+*   Inject TYPO3 Guzzle config from TYPO3_CONF_VARS/HTTP to BynderClient
 
--   Use 2 caches to differ between pagenav and fileinfo cache
+Version 2.0.1 Release Notes
+===========================
 
-**Version 1.0.4**
+*   Update ext icon
+*   Update title in documentation
+*   Remove minimal example from documentation
 
--   Add option to use transient cache to retrieve most current files
+Version 2.0.0 Release Notes
+===========================
 
-**Version 1.0.3**
+*   Update to new Bynder PHP SDK
+*   Make use of new OAuth 2.0 authorization
 
--   Add option to set number of files in file browser
--   Add functional tests
+Version 1.0.7 Release Notes
+===========================
 
-**Version 1.0.0**
+*   Move all bynder calls into its own BynderService
+*   Catch various Exceptions of Bynder calls
+*   Better usage of caches
+*   Use FAL indexer to fetch all files and mark missing ones
+*   Add OrderingUtility
 
--   Initial upload
--   Only TYPO3 10 compatibility
--   Supports only OAuth 1
+Version 1.0.6 Release Notes
+===========================
+
+*   Clear the two new caches in sync command
+
+Version 1.0.5 Release Notes
+===========================
+
+*   Use 2 caches to differ between pagenav and fileinfo cache
+
+Version 1.0.4 Release Notes
+===========================
+
+*   Add option to use transient cache to retrieve most current files
+
+Version 1.0.3 Release Notes
+===========================
+
+*   Add option to set number of files in file browser
+*   Add functional tests
+
+Version 1.0.0 Release Notes
+===========================
+
+*   Initial upload
+*   Only TYPO3 10 compatibility
+*   Supports only OAuth 1

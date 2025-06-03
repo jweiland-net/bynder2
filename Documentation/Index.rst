@@ -1,59 +1,48 @@
-..  Every manual should have a start label for cross-referencing to
-..  start page. Do not remove this!
-
 ..  _start:
 
 ========
 Bynder 2
 ========
 
-..  only:: html
+EXT:bynder2 is a TYPO3 extension that provides integration with
+Bynder (https://www.bynder.com/) by registering a TYPO3 FAL (File Abstraction Layer)
+driver. This extension offers the following features:
 
-    :Classification:
-        bynder2
-
-    :Version:
-        |release|
-
-    :Language:
-        en
-
-    :Description:
-        Manual covering TYPO3 extension bynder2
-
-    :Keywords:
-        fal, bynder
-
-    :Copyright:
-        2013-2022
-
-    :Author:
-        Stefan Froemken
-
-    :Email:
-        projects@jweiland.net
-
-    :License:
-        This document is published under the Open Publication License
-        available from http://www.opencontent.org/openpub/
-
-    :Rendered:
-        |today|
-
-    The content of this document is related to TYPO3,
-    a GNU/GPL CMS/Framework available from `www.typo3.org <https://typo3.org/>`__.
-
-
-    **Table of Contents**
+*   Seamlessly browse your Bynder assets within the TYPO3 file list module.
+*   Search and sort your Bynder assets directly in the file list module.
+*   Utilize Bynder assets across various TYPO3 content records.
+*   Take advantage of TYPO3’s cropping and resizing functionalities for Bynder assets.
 
 ..  toctree::
-    :maxdepth: 3
+    :glob:
+    :titlesonly:
+    :hidden:
 
+    Installation
+    Configuration
+    */Index
+    *
 
-    Introduction/Index
-    Installation/Index
-    Configuration/Index
-    AdministratorManual/Index
-    KnownProblems/Index
-    ChangeLog/Index
-    Links
+..  card-grid::
+    :columns: 1
+    :columns-md: 2
+    :gap: 4
+    :class: pb-4
+    :card-height: 100
+
+    ..  card:: :ref:`Installation <installation>`
+
+        Explains how to install this extension in Composer-based and Classic
+        TYPO3 installations.
+
+    ..  card:: :ref:`Configuration <configuration>`
+
+        Learn how to configure this extension.
+
+    ..  card:: :ref:`Known Problems <known-problems>`
+
+        Learn how to solve known problems.
+
+    ..  card:: :ref:`Upgrade <upgrade>`
+
+        How to upgrade bynder2 from earlier versions.

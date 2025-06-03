@@ -65,9 +65,4 @@ final class ExtConf
     {
         return $this->numberOfFilesInFileBrowser;
     }
-
-    public function getUseTransientCache(): bool
-    {
-        return $this->useTransientCache;
-    }
 }

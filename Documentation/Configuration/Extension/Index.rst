@@ -10,7 +10,7 @@ Tab: Basic
 ==========
 
 numberOfFilesInFileBrowser
-""""""""""""""""""""""""""
+--------------------------
 
 Default: 100
 Maximum: 1000 (This is a limit of Bynder API)
