@@ -9,17 +9,17 @@ declare(strict_types=1);
  * LICENSE file that was distributed with this source code.
  */
 
-namespace JWeiland\Bynder2\Tests\Functional\Configuration;
+namespace JWeiland\Bynder2\Tests\Unit\Utility;
 
 use JWeiland\Bynder2\Utility\OrderingUtility;
-use Nimut\TestingFramework\TestCase\UnitTestCase;
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 /*
  * Test case.
  */
 class OrderingUtilityTest extends UnitTestCase
 {
-    public function orderingDataProvider(): array
+    public static function orderingDataProvider(): array
     {
         return [
             'Sort by file ASC will be mapped to name' => ['file', false, 'name asc'],

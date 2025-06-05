@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace JWeiland\Bynder2\Tests\Functional\Configuration;
 
 use JWeiland\Bynder2\Configuration\ExtConf;
-use Nimut\TestingFramework\TestCase\FunctionalTestCase;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 /*
  * Test case.
