@@ -11,12 +11,15 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Command;
 
+use Doctrine\DBAL\Exception;
 use JWeiland\Bynder2\Service\BynderSynchronization;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Bynder does not work with folders, so all files are on the root level. So, it's hard to find the related files
@@ -48,6 +51,18 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $output->writeln('Checking environment...');
+        $tableColumns = $this->getColumnsOfTable('sys_file_metadata');
+        foreach (['bynder2_thumb_mini', 'bynder2_thumb_thul', 'bynder2_thumb_webimage'] as $column) {
+            if (!isset($tableColumns[$column])) {
+                $output->writeln(
+                    'Missing columns detected in the "sys_file_metadata" table. '
+                    . 'Please analyze the database using the Install Tool before proceeding.'
+                );
+                return Command::FAILURE;
+            }
+        }
+
         $output->writeln('Start synchronizing bynder files');
         $this->synchronizeStorages($output);
         $this->logger->info('All Bynder files have been synchronized');
@@ -69,5 +84,18 @@ class SyncBynderFilesCommand extends Command implements LoggerAwareInterface
             $this->bynderSynchronization->synchronizeStorage($bynderStorage);
             $this->logger->info('Finished synchronizing files of storage with UID: ' . $bynderStorage->getUid());
         }
+    }
+
+    protected function getColumnsOfTable(string $table): array
+    {
+        try {
+            return GeneralUtility::makeInstance(ConnectionPool::class)
+                ->getConnectionForTable($table)
+                ->createSchemaManager()
+                ->listTableColumns($table);
+        } catch (Exception $e) {
+        }
+
+        return [];
     }
 }

@@ -20,10 +20,10 @@ use TYPO3\CMS\Core\Charset\CharsetConverter;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
+use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Driver\AbstractDriver;
 use TYPO3\CMS\Core\Resource\Exception\InvalidFileNameException;
 use TYPO3\CMS\Core\Resource\Exception\InvalidPathException;
-use TYPO3\CMS\Core\Resource\ResourceStorageInterface;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
@@ -57,6 +57,16 @@ class BynderDriver extends AbstractDriver
         'folder_hash',
     ];
 
+    public function __construct(array $configuration)
+    {
+        parent::__construct($configuration);
+
+        $this->capabilities = new Capabilities(
+            Capabilities::CAPABILITY_BROWSABLE
+            | Capabilities::CAPABILITY_WRITABLE
+        );
+    }
+
     public function processConfiguration(): void
     {
         // no need to configure something.
@@ -79,17 +89,13 @@ class BynderDriver extends AbstractDriver
         }
     }
 
-    public function getCapabilities(): int
+    /**
+     * Merges the capabilities from the user of the storage configuration into the actual
+     * capabilities of the driver and returns the result.
+     */
+    public function mergeConfigurationCapabilities(Capabilities $capabilities): Capabilities
     {
-        // If PUBLIC is available, each file will initiate a request to Bynder-Api to retrieve a public share link
-        // this is extremely slow.
-
-        return ResourceStorageInterface::CAPABILITY_BROWSABLE + ResourceStorageInterface::CAPABILITY_WRITABLE;
-    }
-
-    public function mergeConfigurationCapabilities($capabilities): int
-    {
-        $this->capabilities &= $capabilities;
+        $this->capabilities->and($capabilities);
 
         return $this->capabilities;
     }
