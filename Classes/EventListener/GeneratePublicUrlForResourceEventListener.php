@@ -15,6 +15,12 @@ use JWeiland\Bynder2\Driver\BynderDriver;
 use TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent;
 use TYPO3\CMS\Core\Resource\FileInterface;
 
+/**
+ * In TYPO3's "filelist" module, there is a control button to display the image. By default, this opens the full-sized
+ * image in a new tab. However, in our case, retrieving the original image required an additional request to Bynder
+ * for each individual file. To optimize performance, we utilize the largest available thumbnail as the public URL
+ * instead of fetching the full-sized image.
+ */
 class GeneratePublicUrlForResourceEventListener
 {
     public function __invoke(GeneratePublicUrlForResourceEvent $event): void
