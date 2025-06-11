@@ -16,6 +16,7 @@ ExtensionManagementUtility::addTCAcolumns(
             'config' => [
                 'type' => 'link',
                 'size' => 20,
+                'readOnly' => true,
             ],
         ],
         'bynder2_thumb_thul' => [
@@ -25,6 +26,7 @@ ExtensionManagementUtility::addTCAcolumns(
             'config' => [
                 'type' => 'link',
                 'size' => 20,
+                'readOnly' => true,
             ],
         ],
         'bynder2_thumb_webimage' => [
@@ -34,6 +36,7 @@ ExtensionManagementUtility::addTCAcolumns(
             'config' => [
                 'type' => 'link',
                 'size' => 20,
+                'readOnly' => true,
             ],
         ],
     ],
