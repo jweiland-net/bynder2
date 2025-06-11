@@ -61,10 +61,7 @@ class BynderDriver extends AbstractDriver
     {
         parent::__construct($configuration);
 
-        $this->capabilities = new Capabilities(
-            Capabilities::CAPABILITY_BROWSABLE
-            | Capabilities::CAPABILITY_WRITABLE
-        );
+        $this->capabilities = new Capabilities(Capabilities::CAPABILITY_BROWSABLE);
     }
 
     public function processConfiguration(): void
@@ -80,7 +77,7 @@ class BynderDriver extends AbstractDriver
         try {
             $this->cache = GeneralUtility::makeInstance(CacheManager::class)
                 ->getCache('bynder2_file_response');
-        } catch (NoSuchCacheException $noSuchCacheException) {
+        } catch (NoSuchCacheException) {
             $this->addFlashMessage(
                 'Cache for file information of bynder files could not be created. Please check cache configuration of DB tables',
                 'Cache error',
@@ -90,13 +87,11 @@ class BynderDriver extends AbstractDriver
     }
 
     /**
-     * Merges the capabilities from the user of the storage configuration into the actual
-     * capabilities of the driver and returns the result.
+     * We do not merge capabilities from the user of the storage configuration into the actual
+     * capabilities of the driver as we do not want to make the storage public or writable.
      */
     public function mergeConfigurationCapabilities(Capabilities $capabilities): Capabilities
     {
-        $this->capabilities->and($capabilities);
-
         return $this->capabilities;
     }
 
