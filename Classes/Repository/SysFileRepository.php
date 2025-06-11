@@ -58,7 +58,7 @@ readonly class SysFileRepository
 
             // Default sorting for the FileBrowser modal: display the most recently updated data first.
             // This does not affect the file list module's sorting, as files are sorted manually there via PHP.
-            $queryBuilder->orderBy('crdate', 'DESC');
+            $queryBuilder->orderBy('creation_date', 'DESC');
 
             if ($start > 0) {
                 $queryBuilder->setFirstResult($start);
