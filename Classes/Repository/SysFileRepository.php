@@ -76,7 +76,7 @@ readonly class SysFileRepository
                 ->where(
                     $queryBuilder->expr()->eq(
                         'identifier',
-                        $queryBuilder->createNamedParameter($identifier, Connection::PARAM_INT)
+                        $queryBuilder->createNamedParameter($identifier, Connection::PARAM_STR)
                     ),
                     $queryBuilder->expr()->eq(
                         'storage',
@@ -85,10 +85,10 @@ readonly class SysFileRepository
                 )->executeQuery()
                 ->fetchAssociative();
         } catch (Exception) {
-            $sysFileRecord = [];
+            $sysFileRecord = false;
         }
 
-        return $sysFileRecord !== [];
+        return $sysFileRecord !== false;
     }
 
     public function deleteFile(int $storageUid, string $identifier): void

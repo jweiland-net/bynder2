@@ -13,13 +13,17 @@ namespace JWeiland\Bynder2\Command;
 
 use Bynder\Api\BynderClient;
 use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\BigIntType;
 use JWeiland\Bynder2\Repository\SysFileRepository;
 use JWeiland\Bynder2\Service\BynderClientFactory;
 use JWeiland\Bynder2\Service\BynderService;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\Helper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Resource\FileInterface;
@@ -69,59 +73,58 @@ class SyncBynderFilesCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if ($this->checkEnvironment($output) === false) {
+        $timer = time();
+
+        $io = new SymfonyStyle($input, $output);
+        $io->title('Start synchronizing files from all registered bynder storages to TYPO3');
+
+        if ($this->checkEnvironment($io) === false) {
             return Command::FAILURE;
         }
 
-        $this->synchronizeStorages($output);
-
-        $this->logger->info('All files of all bynder storages have been synchronized');
-
-        return 0;
-    }
-
-    private function synchronizeStorages(OutputInterface $output): void
-    {
         foreach ($this->bynderStorages as $storage) {
-            $this->logger->info('Start synchronizing files of storage with UID: ' . $storage->getUid());
-            if (($client = $this->createBynderClient($storage, $output)) === null) {
+            $io->section('Start synchronizing files of storage with UID: ' . $storage->getUid());
+            if (($client = $this->createBynderClient($storage, $io)) === null) {
                 continue;
             }
-
-            $allExistingIdentifiersOfStorage = $this->sysFileRepository->getFileIdentifiersOfStorage($storage->getUid());
-            $allNewIdentifiersOfStorage = [];
-            $synchronizedFiles = 0;
-            $indexer = $this->getIndexer($storage);
-            foreach ($this->bynderService->getFiles($client, 0, 0) as $fileInformationFromResponse) {
-                $this->synchronizeFile($fileInformationFromResponse, $storage, $indexer, $output);
-                $allNewIdentifiersOfStorage[] = $fileInformationFromResponse['id'];
-                $synchronizedFiles++;
-            }
-
-            $output->writeln(sprintf(
-                'We have synchronized %d and deleted %d files.',
-                $synchronizedFiles,
-                $this->deleteMissingFiles(
-                    $allExistingIdentifiersOfStorage,
-                    $allNewIdentifiersOfStorage,
-                    $storage,
-                    $output
-                ),
-            ));
-            $this->logger->info('Finished synchronizing files of storage with UID: ' . $storage->getUid());
+            $this->synchronizeStorage($storage, $client, $io);
         }
+
+        $this->logger->info('All files of all bynder storages have been synchronized');
+        $io->success(sprintf(
+            'All files of all bynder storages have been synchronized in %s',
+            Helper::formatTime(time() - $timer)
+        ));
+
+        return Command::SUCCESS;
+    }
+
+    private function synchronizeStorage(ResourceStorage $storage, BynderClient $client, SymfonyStyle $io): void
+    {
+        $existingIdentifiers = $this->sysFileRepository->getFileIdentifiersOfStorage($storage->getUid());
+        $newIdentifiers = [];
+
+        $synchronizedFiles = 0;
+        $indexer = $this->getIndexer($storage);
+        foreach ($this->bynderService->getFiles($client, 0, 0) as $fileInformationFromResponse) {
+            $this->synchronizeFile($fileInformationFromResponse, $storage, $indexer, $io);
+            $newIdentifiers[] = $fileInformationFromResponse['id'];
+            $synchronizedFiles++;
+        }
+
+        $io->text(sprintf(
+            'We have synchronized %d and deleted %d files.',
+            $synchronizedFiles,
+            $this->deleteMissingFiles($existingIdentifiers, $newIdentifiers, $storage, $io),
+        ));
     }
 
     private function synchronizeFile(
         array $fileInformationFromResponse,
         ResourceStorage $storage,
         Indexer $indexer,
-        OutputInterface $output,
+        SymfonyStyle $io
     ): void {
-        if ($output->isVeryVerbose()) {
-            $output->writeln(sprintf('Synchronizing file with ID: %s', $fileInformationFromResponse['id']));
-        }
-
         // Only the file ID is used, but all Bynder file data is kept in a transient cache
         // for full driver access later.
         $this->fileInfoCache->set($fileInformationFromResponse['id'], $fileInformationFromResponse);
@@ -134,22 +137,20 @@ class SyncBynderFilesCommand extends Command
 
             if ($fileObject instanceof FileInterface) {
                 $indexer->updateIndexEntry($fileObject);
-                if ($output->isVerbose()) {
-                    $output->writeln(sprintf('File with ID: %s was updated.', $fileInformationFromResponse['id']));
-                }
+                $io->text(sprintf('%-35s    %s', $fileInformationFromResponse['id'], 'Updated'));
+            } else {
+                $io->text(sprintf('%-35s    %s', $fileInformationFromResponse['id'], 'Error. See logs.'));
+                $this->logger->error(sprintf(
+                    'File %s is not an interface of TYPO3\'s FileInterface.',
+                    $fileInformationFromResponse['id']
+                ));
             }
         } else {
             $indexer->createIndexEntry($fileInformationFromResponse['id']);
-            if ($output->isVerbose()) {
-                $output->writeln(sprintf('File with ID: %s was created.', $fileInformationFromResponse['id']));
-            }
+            $io->text(sprintf('%-35s    %s', $fileInformationFromResponse['id'], 'Created'));
         }
 
         $this->fileInfoCache->remove($fileInformationFromResponse['id']);
-
-        if ($output->isVeryVerbose()) {
-            $output->writeln(sprintf('Finished synchronizing file with ID: %s', $fileInformationFromResponse['id']));
-        }
     }
 
     /**
@@ -161,40 +162,38 @@ class SyncBynderFilesCommand extends Command
         array $existingIdentifiers,
         array $newIdentifiers,
         ResourceStorage $storage,
-        OutputInterface $output
+        SymfonyStyle $io
     ): int {
         $deletedFiles = 0;
         $missingIdentifiers = array_diff($existingIdentifiers, $newIdentifiers);
         foreach ($missingIdentifiers as $missingIdentifier) {
             $this->sysFileRepository->deleteFile($storage->getUid(), $missingIdentifier);
-            if ($output->isVerbose()) {
-                $output->writeln(sprintf('File with ID: %s was deleted.', $missingIdentifier));
-            }
+            $io->text(sprintf('%-35s    %s', $missingIdentifier, 'Deleted'));
             $deletedFiles++;
         }
 
         return $deletedFiles;
     }
 
-    private function createBynderClient(ResourceStorage $storage, OutputInterface $output): ?BynderClient
+    private function createBynderClient(ResourceStorage $storage, SymfonyStyle $io): ?BynderClient
     {
         try {
             return $this->bynderClientFactory->createClient($storage->getConfiguration());
         } catch (\Exception $e) {
-            $output->writeln('Could not create Bynder client because of invalid configuration');
+            $io->writeln('Could not create Bynder client because of invalid configuration');
             $this->logger->error('Could not create Bynder client because of invalid configuration', ['exception' => $e]);
         }
 
         return null;
     }
 
-    private function checkEnvironment(OutputInterface $output): bool
+    private function checkEnvironment(SymfonyStyle $io): bool
     {
-        $tableColumns = $this->getColumnsOfSysFileMetadata();
+        $sysFileMetadataColumns = $this->getColumnsOfTable('sys_file_metadata');
 
         foreach (self::REQUIRED_COLUMNS as $column) {
-            if (!isset($tableColumns[$column])) {
-                $output->writeln(
+            if (!array_key_exists($column, $sysFileMetadataColumns)) {
+                $io->text(
                     'Missing columns detected in the "sys_file_metadata" table. '
                     . 'Please analyze the database using the Install Tool before proceeding.'
                 );
@@ -203,15 +202,24 @@ class SyncBynderFilesCommand extends Command
             }
         }
 
+        $sysFileColumns = $this->getColumnsOfTable('sys_file');
+        if (!$sysFileColumns['size']->getType() instanceof BigIntType) {
+            $io->writeln(
+                'Column "size" in the "sys_file" table is not of type BIGINT. '
+                . 'Please analyze the database using the Install Tool before proceeding.'
+            );
+            return false;
+        }
+
         if ($this->bynderStorages->count() === 0) {
-            $output->writeln('No bynder storages found.');
+            $io->writeln('No bynder storages found.');
             $this->logger->warning('No bynder storages found.');
             return false;
         }
 
         foreach ($this->bynderStorages as $storage) {
             if (!$storage->autoExtractMetadataEnabled()) {
-                $output->writeln('Auto extract metadata is disabled for storage with UID: ' . $storage->getUid());
+                $io->writeln('Auto extract metadata is disabled for storage with UID: ' . $storage->getUid());
                 $this->logger->warning('Auto extract metadata is disabled for storage with UID: ' . $storage->getUid());
                 return false;
             }
@@ -220,13 +228,16 @@ class SyncBynderFilesCommand extends Command
         return true;
     }
 
-    private function getColumnsOfSysFileMetadata(): array
+    /**
+     * @return Column[]
+     */
+    private function getColumnsOfTable(string $table): array
     {
         try {
             return GeneralUtility::makeInstance(ConnectionPool::class)
-                ->getConnectionForTable('sys_file_metadata')
+                ->getConnectionForTable($table)
                 ->createSchemaManager()
-                ->listTableColumns('sys_file_metadata');
+                ->listTableColumns($table);
         } catch (Exception) {
         }
 

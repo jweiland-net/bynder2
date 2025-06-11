@@ -29,7 +29,7 @@ class BynderService implements LoggerAwareInterface
      * Max files to retrieve from Bynder API.
      * Currently, 1000 is max.
      */
-    private const MAX_FILES_EACH_REQUEST = 500;
+    public const MAX_FILES_EACH_REQUEST = 500;
 
     public function __construct(
         protected readonly ExtConf $extConf,
