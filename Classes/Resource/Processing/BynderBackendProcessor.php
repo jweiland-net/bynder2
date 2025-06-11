@@ -71,7 +71,12 @@ class BynderBackendProcessor implements ProcessorInterface
             ]);
         }
 
-        $task->setExecuted(true);
+        // If the "executed" property is set to true, the ProcessedFile will be persisted afterward,
+        // excluding the "processed_url" column. This is due to the relationship between ProcessedFile and the
+        // original file. Refer to ProcessedFile::toArray() and ProcessedFile::usesOriginalFile() for details.
+        // As a result, upon subsequent reconstitution, the ProcessedFile will have a UID but an empty
+        // "processed_url". The task responsible for setting this URL will not be executed again.
+        $task->setExecuted(false);
     }
 
     /**
