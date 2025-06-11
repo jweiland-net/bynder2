@@ -20,7 +20,7 @@ services:
 
   bynder2.storages:
     class: SplObjectStorage
-    factory: ['@JWeiland\Bynder2\Repository\BynderStorageRepository', 'getBynderStorages']
+    factory: ['@JWeiland\Bynder2\Repository\BynderStorageFactory', 'getBynderStorages']
 
   bynder2.qb.sys_file:
     class: 'TYPO3\CMS\Core\Database\Query\QueryBuilder'
@@ -33,6 +33,7 @@ services:
   JWeiland\Bynder2\Command\SyncBynderFilesCommand:
     arguments:
       $bynderStorages: '@bynder2.storages'
+      $fileInfoCache: '@bynder2.cache.fileinfo'
     tags:
       - {name: 'console.command', command: 'fal:bynder:sync', schedulable: true}
 
@@ -50,18 +51,13 @@ services:
     arguments:
       $cache: '@bynder2.cache.fileinfo'
 
-  JWeiland\Bynder2\EventListener\UseBynderCdnForProcessingUrlEventListener:
-    tags:
-      - name: event.listener
-        event: TYPO3\CMS\Core\Resource\Event\BeforeFileProcessingEvent
-
   JWeiland\Bynder2\EventListener\GeneratePublicUrlForResourceEventListener:
     tags:
       - name: event.listener
         event: TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent
 
   # Called by makeInstance in BynderDriver
-  JWeiland\Bynder2\Repository\FileRepository:
+  JWeiland\Bynder2\Repository\SysFileRepository:
     public: true
     arguments:
       $queryBuilder: '@bynder2.qb.sys_file'
@@ -73,11 +69,6 @@ services:
   # Called by makeInstance from EXT:backend form elements
   JWeiland\Bynder2\Service\BynderService:
     public: true
-
-  # Called by makeInstance from EXT:backend form elements
-  JWeiland\Bynder2\Service\BynderSynchronization:
-    arguments:
-      $cache: '@bynder2.cache.fileinfo'
 
   # Called by makeInstance in BynderDriver
   JWeiland\Bynder2\Utility\OrderingUtility:

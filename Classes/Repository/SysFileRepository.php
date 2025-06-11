@@ -15,22 +15,33 @@ use Doctrine\DBAL\Exception;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
+use TYPO3\CMS\Core\Resource\Exception\FileOperationErrorException;
+use TYPO3\CMS\Core\Resource\Exception\InsufficientFileAccessPermissionsException;
+use TYPO3\CMS\Core\Resource\FileInterface;
+use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class FileRepository
+/**
+ * Repository for accessing records in the "sys_file" table.
+ * Primarily utilized during synchronization processes to retrieve all files and identify deleted records.
+ */
+readonly class SysFileRepository
 {
+    private const TABLE = 'sys_file';
+
     public function __construct(
-        private readonly QueryBuilder $queryBuilder,
+        private QueryBuilder $queryBuilder,
+        private ResourceFactory $resourceFactory,
     ) {}
 
     public function getFileIdentifiersOfStorage(int $storageUid): array
     {
-        $queryBuilder = $this->getQueryBuilder();
+        $queryBuilder = $this->getRestrictedQueryBuilder();
 
         try {
             $sysFileRecords = $queryBuilder
                 ->select('identifier')
-                ->from('sys_file')
+                ->from(self::TABLE)
                 ->where(
                     $queryBuilder->expr()->eq(
                         'storage',
@@ -42,7 +53,7 @@ class FileRepository
                     ),
                 )->executeQuery()
                 ->fetchAllAssociative();
-        } catch (Exception $e) {
+        } catch (Exception) {
             $sysFileRecords = [];
         }
 
@@ -56,12 +67,12 @@ class FileRepository
 
     public function hasFileIdentifierInStorage(string $identifier, int $storageUid): bool
     {
-        $queryBuilder = $this->getQueryBuilder();
+        $queryBuilder = $this->getRestrictedQueryBuilder();
 
         try {
             $sysFileRecord = $queryBuilder
                 ->select('uid')
-                ->from('sys_file')
+                ->from(self::TABLE)
                 ->where(
                     $queryBuilder->expr()->eq(
                         'identifier',
@@ -73,14 +84,26 @@ class FileRepository
                     ),
                 )->executeQuery()
                 ->fetchAssociative();
-        } catch (Exception $e) {
+        } catch (Exception) {
             $sysFileRecord = [];
         }
 
         return $sysFileRecord !== [];
     }
 
-    private function getQueryBuilder(): QueryBuilder
+    public function deleteFile(int $storageUid, string $identifier): void
+    {
+        $fileObject = $this->resourceFactory->getFileObjectByStorageAndIdentifier($storageUid, $identifier);
+
+        if ($fileObject instanceof FileInterface) {
+            try {
+                $fileObject->delete();
+            } catch (InsufficientFileAccessPermissionsException | FileOperationErrorException) {
+            }
+        }
+    }
+
+    private function getRestrictedQueryBuilder(): QueryBuilder
     {
         $queryBuilder = $this->queryBuilder;
         $queryBuilder

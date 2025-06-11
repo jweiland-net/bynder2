@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Driver;
 
-use JWeiland\Bynder2\Repository\FileRepository;
+use JWeiland\Bynder2\Repository\SysFileRepository;
 use JWeiland\Bynder2\Service\BynderClientFactory;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
@@ -35,7 +35,7 @@ class BynderDriver extends AbstractDriver
 {
     private const UNSAFE_FILENAME_CHARACTER_EXPRESSION = '\\x00-\\x2C\\/\\x3A-\\x3F\\x5B-\\x60\\x7B-\\xBF';
 
-    protected FileRepository $fileRepository;
+    protected SysFileRepository $fileRepository;
 
     protected FlashMessageService $flashMessageService;
 
@@ -74,7 +74,7 @@ class BynderDriver extends AbstractDriver
 
     public function initialize(): void
     {
-        $this->fileRepository = GeneralUtility::makeInstance(FileRepository::class);
+        $this->fileRepository = GeneralUtility::makeInstance(SysFileRepository::class);
         $this->flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
 
         try {
