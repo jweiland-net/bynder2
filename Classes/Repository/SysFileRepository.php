@@ -34,12 +34,15 @@ readonly class SysFileRepository
         private ResourceFactory $resourceFactory,
     ) {}
 
-    public function getFileIdentifiersOfStorage(int $storageUid): array
-    {
+    public function getFileIdentifiersOfStorage(
+        int $storageUid,
+        $start = 0,
+        $numberOfItems = 0,
+    ): array {
         $queryBuilder = $this->getRestrictedQueryBuilder();
 
         try {
-            $sysFileRecords = $queryBuilder
+            $queryBuilder
                 ->select('identifier')
                 ->from(self::TABLE)
                 ->where(
@@ -51,7 +54,22 @@ readonly class SysFileRepository
                         'missing',
                         $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)
                     ),
-                )->executeQuery()
+                );
+
+            // Default sorting for the FileBrowser modal: display the most recently updated data first.
+            // This does not affect the file list module's sorting, as files are sorted manually there via PHP.
+            $queryBuilder->orderBy('crdate', 'DESC');
+
+            if ($start > 0) {
+                $queryBuilder->setFirstResult($start);
+            }
+
+            if ($numberOfItems > 0) {
+                $queryBuilder->setMaxResults($numberOfItems);
+            }
+
+            $sysFileRecords = $queryBuilder
+                ->executeQuery()
                 ->fetchAllAssociative();
         } catch (Exception) {
             $sysFileRecords = [];

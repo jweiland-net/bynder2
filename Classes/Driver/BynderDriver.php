@@ -401,7 +401,13 @@ class BynderDriver extends AbstractDriver
         $sort = '',
         $sortRev = false
     ): array {
-        return $this->fileRepository->getFileIdentifiersOfStorage($this->storageUid);
+        // Respecting the sorting order is not practical, as FileList::sortResources
+        // manually sorts all thousands of files in the "file list" module.
+        return $this->fileRepository->getFileIdentifiersOfStorage(
+            $this->storageUid,
+            $start,
+            $numberOfItems,
+        );
     }
 
     public function getFolderInFolder($folderName, $folderIdentifier): string
