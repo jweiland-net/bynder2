@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace JWeiland\Bynder2\Tests\Functional\Configuration;
 
 use JWeiland\Bynder2\Configuration\ExtConf;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
@@ -20,29 +22,11 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
  */
 class ExtConfTest extends FunctionalTestCase
 {
-    protected ExtConf $subject;
-
     protected array $testExtensionsToLoad = [
         'typo3conf/ext/bynder2',
     ];
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->subject = ExtConf::create(new ExtensionConfiguration());
-    }
-
-    protected function tearDown(): void
-    {
-        unset(
-            $this->subject
-        );
-
-        parent::tearDown();
-    }
-
-    public function numberOfFilesDataProvider(): array
+    public static function numberOfFilesDataProvider(): array
     {
         return [
             'Number with prepended text' => ['123Test', 123],
@@ -55,51 +39,36 @@ class ExtConfTest extends FunctionalTestCase
         ];
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function getNumberOfFilesInFileBrowserInitiallyReturns100(): void
     {
+        $extConf = new ExtConf();
+
         self::assertSame(
             100,
-            $this->subject->getNumberOfFilesInFileBrowser()
+            $extConf->getNumberOfFilesInFileBrowser()
         );
     }
 
-    /**
-     * @test
-     *
-     * @dataProvider numberOfFilesDataProvider
-     */
+    #[Test]
+    #[DataProvider('numberOfFilesDataProvider')]
     public function setNumberOfFilesInFileBrowserWithStringResultsInInteger($value, $expected): void
     {
-        $this->subject->setNumberOfFilesInFileBrowser($value);
+        $configuration = [
+            'numberOfFilesInFileBrowser' => $value,
+        ];
+
+        $extensionConfigurationMock = $this->createMock(ExtensionConfiguration::class);
+        $extensionConfigurationMock
+            ->method('get')
+            ->with('bynder2')
+            ->willReturn($configuration);
+
+        $extConf = ExtConf::create($extensionConfigurationMock);
 
         self::assertSame(
             $expected,
-            $this->subject->getNumberOfFilesInFileBrowser()
-        );
-    }
-
-    /**
-     * @test
-     */
-    public function getUseTransientCacheInitiallyReturnsFalse(): void
-    {
-        self::assertFalse(
-            $this->subject->getUseTransientCache()
-        );
-    }
-
-    /**
-     * @test
-     */
-    public function setUseTransientCacheWillSetUseTransientCache(): void
-    {
-        $this->subject->setUseTransientCache('1');
-
-        self::assertTrue(
-            $this->subject->getUseTransientCache()
+            $extConf->getNumberOfFilesInFileBrowser()
         );
     }
 }
