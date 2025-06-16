@@ -40,7 +40,7 @@ class BynderBackendProcessor implements ProcessorInterface
 
         // This is a copy&paste from DeferredBackendImageProcessor.
         // Remove the last condition as _processing_ folder is not needed.
-        $context = GeneralUtility::makeInstance(Context::class);
+        $context = $this->getContext();
         return ($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
             && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isBackend()
             && $task->getType() === 'Image'
@@ -57,7 +57,7 @@ class BynderBackendProcessor implements ProcessorInterface
     {
         try {
             $imageDimension = ImageDimension::fromProcessingTask($task);
-        } catch (ZeroImageDimensionException $e) {
+        } catch (ZeroImageDimensionException) {
             // To not fail image processing, we just assume an image dimension here
             $imageDimension = new ImageDimension(64, 64);
         }
@@ -97,5 +97,10 @@ class BynderBackendProcessor implements ProcessorInterface
         }
 
         return $processingUrl;
+    }
+
+    private function getContext(): Context
+    {
+        return GeneralUtility::makeInstance(Context::class);
     }
 }

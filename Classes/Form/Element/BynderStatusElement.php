@@ -11,35 +11,52 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Form\Element;
 
-use Bynder\Api\BynderClient;
 use Bynder\Api\Impl\OAuth2\Configuration as AccessTokenConfiguration;
 use JWeiland\Bynder2\Client\BynderClientWrapper;
 use JWeiland\Bynder2\Service\BynderClientFactory;
 use JWeiland\Bynder2\Service\BynderService;
 use League\OAuth2\Client\Token\AccessToken;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
+use TYPO3\CMS\Core\View\ViewFactoryData;
+use TYPO3\CMS\Core\View\ViewFactoryInterface;
+use TYPO3\CMS\Core\View\ViewInterface;
 
 /*
  * This class retrieves and shows Bynder Account information
  */
 class BynderStatusElement extends AbstractFormElement
 {
+    private const TEMPLATE = 'EXT:bynder2/Resources/Private/Templates/ShowAccountStatus.html';
+
+    public function __construct(
+        private readonly BynderService $bynderService,
+        private readonly BynderClientFactory $bynderClientFactory,
+        private readonly ViewFactoryInterface $viewFactory,
+        private readonly FlexFormService $flexFormService,
+    ) {}
+
     public function render(): array
     {
         $resultArray = $this->initializeResultArray();
+
         if (is_string($this->data['databaseRow']['configuration'])) {
-            $flexFormService = GeneralUtility::makeInstance(FlexFormService::class);
-            $bynderFalConfiguration = $flexFormService->convertFlexFormContentToArray($this->data['databaseRow']['configuration']);
+            $bynderFalConfiguration = $this->flexFormService->convertFlexFormContentToArray(
+                $this->data['databaseRow']['configuration']
+            );
         } else {
             $bynderFalConfiguration = array_map(static function ($value): string {
                 return $value['vDEF'];
             }, $this->data['databaseRow']['configuration']['data']['sDEF']['lDEF']);
         }
 
-        $resultArray['html'] = $this->getHtmlForConnected($bynderFalConfiguration);
+        $resultArray['html'] = $this->getHtmlForConnected(
+            $bynderFalConfiguration,
+            $this->data['request'] ?? new ServerRequest(),
+        );
 
         return $resultArray;
     }
@@ -47,15 +64,15 @@ class BynderStatusElement extends AbstractFormElement
     /**
      * Get HTML to show the user that he is connected with his bynder account
      */
-    public function getHtmlForConnected(array $bynderFalConfiguration): string
+    public function getHtmlForConnected(array $bynderFalConfiguration, ServerRequestInterface $request): string
     {
-        $view = $this->getStandaloneView();
+        $view = $this->getView($request);
 
         if (isset($bynderFalConfiguration['accessToken']) && $bynderFalConfiguration['accessToken'] !== '') {
             try {
-                $bynderClientWrapper = $this->getBynderClientFactory()->createClientWrapper($bynderFalConfiguration);
+                $bynderClientWrapper = $this->bynderClientFactory->createClientWrapper($bynderFalConfiguration);
                 $view->assignMultiple([
-                    'account' => $this->getBynderService()->getCurrentUser($bynderClientWrapper->getBynderClient()),
+                    'account' => $this->bynderService->getCurrentUser($bynderClientWrapper->getBynderClient()),
                     'expires' => $this->getExpires($bynderFalConfiguration, $bynderClientWrapper)
                 ]);
 
@@ -88,31 +105,13 @@ class BynderStatusElement extends AbstractFormElement
         return (int)$expires;
     }
 
-    protected function getStandaloneView(): StandaloneView
+    protected function getView(ServerRequestInterface $request): ViewInterface
     {
-        $view = GeneralUtility::makeInstance(StandaloneView::class);
-        $view->setTemplatePathAndFilename(
-            'EXT:bynder2/Resources/Private/Templates/ShowAccountStatus.html'
+        $viewData = new ViewFactoryData(
+            templatePathAndFilename: self::TEMPLATE,
+            request: $request,
         );
 
-        return $view;
-    }
-
-    protected function getBynderService(): BynderService
-    {
-        return GeneralUtility::makeInstance(BynderService::class);
-    }
-
-    protected function getBynderClientFactory(): BynderClientFactory
-    {
-        return GeneralUtility::makeInstance(BynderClientFactory::class);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    protected function getBynderClient(array $configuration): BynderClient
-    {
-        return $this->getBynderClientFactory()->createClient($configuration);
+        return $this->viewFactory->create($viewData);
     }
 }

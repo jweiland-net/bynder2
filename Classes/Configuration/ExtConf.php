@@ -27,12 +27,10 @@ final class ExtConf
 
     private const DEFAULT_SETTINGS = [
         'numberOfFilesInFileBrowser' => 100,
-        'useTransientCache' => false,
     ];
 
     public function __construct(
         private readonly int $numberOfFilesInFileBrowser = self::DEFAULT_SETTINGS['numberOfFilesInFileBrowser'],
-        private readonly bool $useTransientCache = self::DEFAULT_SETTINGS['useTransientCache'],
     ) {}
 
     public static function create(ExtensionConfiguration $extensionConfiguration): self
@@ -57,7 +55,6 @@ final class ExtConf
 
         return new self(
             numberOfFilesInFileBrowser: $extensionSettings['numberOfFilesInFileBrowser'],
-            useTransientCache: (bool)$extensionSettings['useTransientCache'],
         );
     }
 

@@ -19,10 +19,10 @@ use TYPO3\CMS\Core\Resource\Index\ExtractorInterface;
  * Since Bynder does not provide local storage, a custom extractor service is utilized
  * to retrieve metadata such as width, height, and copyright for sys_file_metadata.
  */
-class BynderExtractor implements ExtractorInterface
+final readonly class BynderExtractor implements ExtractorInterface
 {
     public function __construct(
-        private readonly FrontendInterface $cache,
+        private FrontendInterface $cache,
     ) {}
 
     public function getFileTypeRestrictions(): array

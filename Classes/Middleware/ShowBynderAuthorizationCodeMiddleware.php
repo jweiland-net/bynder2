@@ -28,20 +28,18 @@ class ShowBynderAuthorizationCodeMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        $queryParameters = $request->getQueryParams();
+
         if (
-            isset(
-                $_GET['state'],
-                $_GET['code']
-            )
-            && $_GET['state'] !== ''
-            && $_GET['code'] !== ''
+            isset($queryParameters['state'], $queryParameters['code'])
+            && $queryParameters['state'] !== ''
+            && $queryParameters['code'] !== ''
         ) {
-            $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
             return new RedirectResponse(
-                (string)$uriBuilder->buildUriFromRoute(
+                (string)$this->getUriBuilder()->buildUriFromRoute(
                     'bynder_authorization_code',
                     [
-                        'ext-bynder-code' => htmlspecialchars(strip_tags($_GET['code'])),
+                        'ext-bynder-code' => htmlspecialchars(strip_tags($queryParameters['code'])),
                     ]
                 ),
                 303
@@ -49,5 +47,10 @@ class ShowBynderAuthorizationCodeMiddleware implements MiddlewareInterface
         }
 
         return $handler->handle($request);
+    }
+
+    private function getUriBuilder(): UriBuilder
+    {
+        return GeneralUtility::makeInstance(UriBuilder::class);
     }
 }

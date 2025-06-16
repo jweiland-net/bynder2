@@ -15,11 +15,11 @@ use Bynder\Api\Impl\OAuth2\Configuration as AccessTokenConfiguration;
 use Bynder\Api\Impl\PermanentTokens\Configuration as PermanentTokenConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class BynderPermanentTokenConfiguration implements BynderTokenConfigurationInterface
+final readonly class BynderPermanentTokenConfiguration implements BynderTokenConfigurationInterface
 {
     public function __construct(
-        private readonly BynderFalConfiguration $bynderFalConfiguration,
-        private readonly GuzzleConfiguration $guzzleConfiguration,
+        private BynderFalConfiguration $bynderFalConfiguration,
+        private GuzzleConfiguration $guzzleConfiguration,
     ) {}
 
     public function getToken(): AccessTokenConfiguration|PermanentTokenConfiguration|null

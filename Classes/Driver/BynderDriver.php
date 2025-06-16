@@ -75,8 +75,7 @@ class BynderDriver extends AbstractDriver
         $this->flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
 
         try {
-            $this->cache = GeneralUtility::makeInstance(CacheManager::class)
-                ->getCache('bynder2_file_response');
+            $this->cache = $this->getCacheManager()->getCache('bynder2_file_response');
         } catch (NoSuchCacheException) {
             $this->addFlashMessage(
                 'Cache for file information of bynder files could not be created. Please check cache configuration of DB tables',
@@ -586,5 +585,10 @@ class BynderDriver extends AbstractDriver
     protected function getBynderClientFactory(): BynderClientFactory
     {
         return GeneralUtility::makeInstance(BynderClientFactory::class);
+    }
+
+    private function getCacheManager(): CacheManager
+    {
+        return GeneralUtility::makeInstance(CacheManager::class);
     }
 }

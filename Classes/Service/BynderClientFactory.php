@@ -14,11 +14,11 @@ namespace JWeiland\Bynder2\Service;
 use Bynder\Api\BynderClient;
 use JWeiland\Bynder2\Client\BynderClientWrapper;
 
-class BynderClientFactory
+final readonly class BynderClientFactory
 {
     public function __construct(
-        private readonly BynderTokenFactory $bynderTokenFactory,
-        private readonly BynderFalConfigurationFactory $bynderFalConfigurationFactory,
+        private BynderTokenFactory $bynderTokenFactory,
+        private BynderFalConfigurationFactory $bynderFalConfigurationFactory,
     ) {}
 
     /**

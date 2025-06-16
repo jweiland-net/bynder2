@@ -16,19 +16,25 @@ use JWeiland\Bynder2\Service\BynderClientFactory;
 use JWeiland\Bynder2\Service\BynderService;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Core\Service\FlexFormService;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * This class retrieves the Bynder Authorization URL
  */
 class BynderAuthorizationUrlElement extends AbstractFormElement
 {
+    public function __construct(
+        private readonly FlexFormService $flexFormService,
+        private readonly BynderService $bynderService,
+        private readonly BynderClientFactory $bynderClientFactory,
+    ) {}
+
     public function render(): array
     {
         $resultArray = $this->initializeResultArray();
         if (is_string($this->data['databaseRow']['configuration'])) {
-            $flexFormService = GeneralUtility::makeInstance(FlexFormService::class);
-            $bynderFalConfiguration = $flexFormService->convertFlexFormContentToArray($this->data['databaseRow']['configuration']);
+            $bynderFalConfiguration = $this->flexFormService->convertFlexFormContentToArray(
+                $this->data['databaseRow']['configuration']
+            );
         } else {
             $bynderFalConfiguration = array_map(static function ($value): string {
                 return $value['vDEF'];
@@ -50,24 +56,13 @@ class BynderAuthorizationUrlElement extends AbstractFormElement
 
             return sprintf(
                 'Authorization URL: <a href="%s" target="_blank" title="%s">%s</a>',
-                $this->getBynderService()->getAuthorizationUrl($bynderClient),
+                $this->bynderService->getAuthorizationUrl($bynderClient),
                 'Authorize Bynder App',
                 'Authorize Bynder App'
             );
         } catch (\Exception $exception) {
             return 'Bynder Error: ' . $exception->getMessage();
-            // return 'Please setup url, redirectCallback, clientId and clientSecret first.';
         }
-    }
-
-    protected function getBynderService(): BynderService
-    {
-        return GeneralUtility::makeInstance(BynderService::class);
-    }
-
-    protected function getBynderClientFactory(): BynderClientFactory
-    {
-        return GeneralUtility::makeInstance(BynderClientFactory::class);
     }
 
     /**
@@ -75,6 +70,6 @@ class BynderAuthorizationUrlElement extends AbstractFormElement
      */
     protected function getBynderClient(array $configuration): BynderClient
     {
-        return $this->getBynderClientFactory()->createClient($configuration);
+        return $this->bynderClientFactory->createClient($configuration);
     }
 }

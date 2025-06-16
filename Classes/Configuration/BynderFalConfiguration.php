@@ -11,18 +11,18 @@ declare(strict_types=1);
 
 namespace JWeiland\Bynder2\Configuration;
 
-class BynderFalConfiguration
+final readonly class BynderFalConfiguration
 {
     public function __construct(
-        private readonly string $url = '',
-        private readonly string $permanentToken = '',
-        private readonly string $redirectCallback = '',
-        private readonly string $clientId = '',
-        private readonly string $clientSecret = '',
-        private readonly string $authorizationUrl = '',
-        private readonly string $accessToken = '',
-        private readonly string $refreshToken = '',
-        private readonly int $expires = 0,
+        private string $url = '',
+        private string $permanentToken = '',
+        private string $redirectCallback = '',
+        private string $clientId = '',
+        private string $clientSecret = '',
+        private string $authorizationUrl = '',
+        private string $accessToken = '',
+        private string $refreshToken = '',
+        private int $expires = 0,
     ) {}
 
     public function getUrl(): string

@@ -15,33 +15,34 @@ use JWeiland\Bynder2\Service\BynderClientFactory;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
+use TYPO3\CMS\Core\View\ViewFactoryData;
+use TYPO3\CMS\Core\View\ViewFactoryInterface;
+use TYPO3\CMS\Core\View\ViewInterface;
 
 /**
  * Show code (to retrieve an access token) after a Bynder App was authorized and redirectCallback was called.
  */
-class AuthorizationUrlController
+final readonly class AuthorizationUrlController
 {
+    private const TEMPLATE = 'EXT:bynder2/Resources/Private/Templates/ShowAccessToken.html';
+
     public function __construct(
-        protected readonly ModuleTemplate $moduleTemplate,
-        protected readonly BynderClientFactory $bynderClientFactory,
-        protected readonly \SplObjectStorage $bynderStorages,
+        protected ViewFactoryInterface $viewFactory,
+        protected BynderClientFactory $bynderClientFactory,
+        protected \SplObjectStorage $bynderStorages,
     ) {}
 
     public function processRequest(ServerRequestInterface $request): ResponseInterface
     {
         $parameters = $request->getQueryParams();
-        $this->moduleTemplate->setTitle('Generate Bynder Access Token');
+        $view = $this->getView($request);
 
         if (isset($parameters['ext-bynder-code']) && $parameters['ext-bynder-code'] !== '') {
             $code = strip_tags($parameters['ext-bynder-code']);
 
-            $view = $this->getStandaloneView();
             $view->assign('code', $code);
 
             try {
@@ -66,26 +67,24 @@ class AuthorizationUrlController
                         $this->assignAccessTokenToView($view, $accessToken);
                     }
                 }
-            } catch (\Exception $exception) {
+            } catch (\Exception) {
                 return new HtmlResponse(
                     'Bynder API: Bad Request. In most cases that means that the code has expired.
                     Please try to re-authorize the Bynder App'
                 );
             }
 
-            $this->moduleTemplate->setContent($view->render());
-
-            return new HtmlResponse($this->moduleTemplate->renderContent());
+            return new HtmlResponse($view->render());
         }
 
         return new HtmlResponse('Request does not contain a bynder code');
     }
 
-    protected function assignAccessTokenToView(StandaloneView $view, AccessToken $accessToken): void
+    protected function assignAccessTokenToView(ViewInterface $moduleTemplate, AccessToken $accessToken): void
     {
-        $view->assign('accessToken', $accessToken->getToken());
-        $view->assign('refreshToken', $accessToken->getRefreshToken());
-        $view->assign('expires', $accessToken->getExpires());
+        $moduleTemplate->assign('accessToken', $accessToken->getToken());
+        $moduleTemplate->assign('refreshToken', $accessToken->getRefreshToken());
+        $moduleTemplate->assign('expires', $accessToken->getExpires());
     }
 
     protected function getAccessToken(ResourceStorage $resourceStorage, string $code): AccessToken
@@ -106,13 +105,13 @@ class AuthorizationUrlController
         return null;
     }
 
-    protected function getStandaloneView(): StandaloneView
+    private function getView(ServerRequestInterface $request): ViewInterface
     {
-        $view = GeneralUtility::makeInstance(StandaloneView::class);
-        $view->setTemplatePathAndFilename(
-            'EXT:bynder2/Resources/Private/Templates/ShowAccessToken.html'
+        $viewData = new ViewFactoryData(
+            templatePathAndFilename: self::TEMPLATE,
+            request: $request,
         );
 
-        return $view;
+        return $this->viewFactory->create($viewData);
     }
 }

@@ -16,11 +16,11 @@ use Bynder\Api\Impl\PermanentTokens\Configuration as PermanentTokenConfiguration
 use League\OAuth2\Client\Token\AccessToken;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class BynderAccessTokenConfiguration implements BynderTokenConfigurationInterface
+final readonly class BynderAccessTokenConfiguration implements BynderTokenConfigurationInterface
 {
     public function __construct(
-        private readonly BynderFalConfiguration $bynderFalConfiguration,
-        private readonly GuzzleConfiguration $guzzleConfiguration,
+        private BynderFalConfiguration $bynderFalConfiguration,
+        private GuzzleConfiguration $guzzleConfiguration,
     ) {}
 
     public function getToken(): AccessTokenConfiguration|PermanentTokenConfiguration|null
