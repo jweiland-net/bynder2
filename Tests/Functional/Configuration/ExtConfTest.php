@@ -15,20 +15,14 @@ use JWeiland\Bynder2\Configuration\ExtConf;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
-/*
+/**
  * Test case.
  */
 class ExtConfTest extends FunctionalTestCase
 {
-    /**
-     * @var ExtConf
-     */
-    protected $subject;
+    protected ExtConf $subject;
 
-    /**
-     * @var array
-     */
-    protected $testExtensionsToLoad = [
+    protected array $testExtensionsToLoad = [
         'typo3conf/ext/bynder2',
     ];
 
@@ -36,7 +30,7 @@ class ExtConfTest extends FunctionalTestCase
     {
         parent::setUp();
 
-        $this->subject = new ExtConf(new ExtensionConfiguration());
+        $this->subject = ExtConf::create(new ExtensionConfiguration());
     }
 
     protected function tearDown(): void
