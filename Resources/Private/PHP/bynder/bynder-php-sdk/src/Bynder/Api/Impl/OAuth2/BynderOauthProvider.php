@@ -1,4 +1,5 @@
 <?php
+
 namespace Bynder\Api\Impl\OAuth2;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
@@ -11,10 +12,10 @@ class BynderOauthProvider extends AbstractProvider
 {
     use BearerAuthorizationTrait;
 
-    const CODE_CHALLENGE_METHOD = 'S256';
-    const CODE_CHALLENGE_METHOD_HASH = 'sha256';
-    const CODE_VERIFIER_LENGTH = 43;
-    const OAUTH_GRANT_TYPE = 'authorization_code';
+    public const CODE_CHALLENGE_METHOD = 'S256';
+    public const CODE_CHALLENGE_METHOD_HASH = 'sha256';
+    public const CODE_VERIFIER_LENGTH = 43;
+    public const OAUTH_GRANT_TYPE = 'authorization_code';
 
     private $codeVerifier;
 
@@ -98,7 +99,7 @@ class BynderOauthProvider extends AbstractProvider
      */
     public function getAccessToken($grant, array $options = [])
     {
-        if(isset($this->codeVerifier)) {
+        if (isset($this->codeVerifier)) {
             $options['code_verifier'] = $this->codeVerifier;
         }
 
@@ -125,9 +126,9 @@ class BynderOauthProvider extends AbstractProvider
     private static function base64url_encode($plainText)
     {
         $base64 = base64_encode($plainText);
-        $base64 = trim($base64, "=");
+        $base64 = trim($base64, '=');
         $base64url = strtr($base64, '+/', '-_');
-        return ($base64url);
+        return $base64url;
     }
 
     /**

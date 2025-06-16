@@ -49,7 +49,7 @@ class SyncBynderFilesCommand extends Command
     ];
 
     /**
-     * @param \SplObjectStorage<ResourceStorage> $bynderStorages
+     * @param \SplObjectStorage<ResourceStorage, null> $bynderStorages
      */
     public function __construct(
         private readonly \SplObjectStorage $bynderStorages,
@@ -119,6 +119,9 @@ class SyncBynderFilesCommand extends Command
         ));
     }
 
+    /**
+     * @param array<string, mixed> $fileInformationFromResponse
+     */
     private function synchronizeFile(
         array $fileInformationFromResponse,
         ResourceStorage $storage,
@@ -157,6 +160,9 @@ class SyncBynderFilesCommand extends Command
      * Bynder does not provide information about deleted files, only the current state.
      * Therefore, we calculate the difference between all existing and incoming records and remove any entries
      * that are no longer present.
+     *
+     * @param array<int, string> $existingIdentifiers
+     * @param array<int, string> $newIdentifiers
      */
     private function deleteMissingFiles(
         array $existingIdentifiers,

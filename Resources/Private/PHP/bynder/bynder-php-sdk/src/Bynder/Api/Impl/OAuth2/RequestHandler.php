@@ -3,7 +3,6 @@
 namespace Bynder\Api\Impl\OAuth2;
 
 use Bynder\Api\Impl\AbstractRequestHandler;
-use Bynder\Api\Impl\OAuth2\BynderOauthProvider;
 
 class RequestHandler extends AbstractRequestHandler
 {
@@ -47,7 +46,9 @@ class RequestHandler extends AbstractRequestHandler
 
         return $this->oauthProvider->getHttpClient()->sendAsync(
             $this->oauthProvider->getAuthenticatedRequest(
-                $requestMethod, $uri, $this->configuration->getToken()
+                $requestMethod,
+                $uri,
+                $this->configuration->getToken()
             ),
             $this->getRequestOptions($options)
         );

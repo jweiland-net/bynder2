@@ -29,6 +29,9 @@ final readonly class AuthorizationUrlController
 {
     private const TEMPLATE = 'EXT:bynder2/Resources/Private/Templates/ShowAccessToken.html';
 
+    /**
+     * @param \SplObjectStorage<ResourceStorage, null> $bynderStorages
+     */
     public function __construct(
         protected ViewFactoryInterface $viewFactory,
         protected BynderClientFactory $bynderClientFactory,

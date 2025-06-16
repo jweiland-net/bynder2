@@ -25,15 +25,21 @@ final readonly class BynderExtractor implements ExtractorInterface
         private FrontendInterface $cache,
     ) {}
 
+    /**
+     * @return array<int, string>
+     */
     public function getFileTypeRestrictions(): array
     {
         return [];
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getDriverRestrictions(): array
     {
         return [
-            'bynder2'
+            'bynder2',
         ];
     }
 
@@ -53,7 +59,8 @@ final readonly class BynderExtractor implements ExtractorInterface
     }
 
     /**
-     * @param array $previousExtractedData Contains the extracted data from possible previous extractors.
+     * @param array<string, int|string> $previousExtractedData Contains the extracted data from possible previous extractors.
+     * @return array<string, int|string>
      */
     public function extractMetaData(File $file, array $previousExtractedData = []): array
     {

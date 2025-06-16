@@ -1,4 +1,5 @@
 <?php
+
 namespace Bynder\Api\Impl;
 
 abstract class AbstractRequestHandler
@@ -8,7 +9,9 @@ abstract class AbstractRequestHandler
     public function sendRequestAsync($requestMethod, $uri, $options = [])
     {
         $uri = sprintf(
-            'https://%s/%s', $this->configuration->getBynderDomain(), $uri
+            'https://%s/%s',
+            $this->configuration->getBynderDomain(),
+            $uri
         );
 
         if (!in_array($requestMethod, ['GET', 'POST', 'DELETE'])) {
@@ -21,10 +24,10 @@ abstract class AbstractRequestHandler
             function ($response) {
                 // Some 204 No Content responses have no content type header.
                 if ($response->getStatusCode() === 204 && !$response->hasHeader('Content-Type')) {
-                  return NULL;
+                    return null;
                 }
                 $mimeType = explode(';', $response->getHeader('Content-Type')[0])[0];
-                switch($mimeType) {
+                switch ($mimeType) {
                     case 'application/json':
                         return json_decode($response->getBody(), true);
                     case 'text/plain':

@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) Bynder. All rights reserved.
  *
  * Licensed under the MIT License. For the full copyright and license information, please view the LICENSE
@@ -35,7 +35,7 @@ class AmazonApi
         $chunk,
         $numberOfChunks
     ) {
-        $finalKey = sprintf("%s/p%d", $uploadRequestInfo['multipart_params']['key'], $chunkNumber);
+        $finalKey = sprintf('%s/p%d', $uploadRequestInfo['multipart_params']['key'], $chunkNumber);
         $formData = [
             self::getFormDataParams('x-amz-credential', $uploadRequestInfo['multipart_params']['x-amz-credential']),
             self::getFormDataParams('X-Amz-Signature', $uploadRequestInfo['multipart_params']['X-Amz-Signature']),
@@ -44,14 +44,16 @@ class AmazonApi
             self::getFormDataParams('Policy', $uploadRequestInfo['multipart_params']['Policy']),
             self::getFormDataParams('key', $finalKey),
             self::getFormDataParams('acl', $uploadRequestInfo['multipart_params']['acl']),
-            self::getFormDataParams('success_action_status',
-                $uploadRequestInfo['multipart_params']['success_action_status']),
+            self::getFormDataParams(
+                'success_action_status',
+                $uploadRequestInfo['multipart_params']['success_action_status']
+            ),
             self::getFormDataParams('Content-Type', $uploadRequestInfo['multipart_params']['Content-Type']),
             self::getFormDataParams('name', $filePath),
             self::getFormDataParams('chunk', $chunkNumber),
             self::getFormDataParams('chunks', $numberOfChunks),
             self::getFormDataParams('Filename', $finalKey),
-            self::getFormDataParams('file', $chunk)
+            self::getFormDataParams('file', $chunk),
         ];
 
         $stack = HandlerStack::create(new CurlHandler());

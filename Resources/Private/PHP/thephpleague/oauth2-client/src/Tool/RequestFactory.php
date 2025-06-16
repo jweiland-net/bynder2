@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the league/oauth2-client library
  *
@@ -26,8 +27,8 @@ class RequestFactory
     /**
      * Creates a PSR-7 Request instance.
      *
-     * @param  null|string $method HTTP method for the request.
-     * @param  null|string $uri URI for the request.
+     * @param  string|null $method HTTP method for the request.
+     * @param  string|null $uri URI for the request.
      * @param  array $headers Headers for the message.
      * @param  string|resource|StreamInterface $body Message body.
      * @param  string $version HTTP protocol version.
@@ -66,8 +67,8 @@ class RequestFactory
     /**
      * Creates a request using a simplified array of options.
      *
-     * @param  null|string $method
-     * @param  null|string $uri
+     * @param  string|null $method
+     * @param  string|null $uri
      * @param  array $options
      *
      * @return Request

@@ -1,6 +1,7 @@
 <?php
+
 if (!defined('TYPO3')) {
-    die ('Access denied.');
+    die('Access denied.');
 }
 
 use JWeiland\Bynder2\Driver\BynderDriver;

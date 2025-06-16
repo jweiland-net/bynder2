@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) Bynder. All rights reserved.
  *
  * Licensed under the MIT License. For the full copyright and license information, please view the LICENSE
@@ -77,7 +77,7 @@ class Configuration
         $this->clientSecret = $clientSecret;
         $this->token = $token;
         $this->requestOptions = $requestOptions;
-        $this->rootDir = dirname(dirname(dirname(dirname(dirname(dirname(__FILE__))))));
+        $this->rootDir = dirname(dirname(dirname(dirname(dirname(__DIR__)))));
         $this->package = json_decode(file_get_contents($this->rootDir . '/composer.json'));
         $this->initialToken = $token;
     }
@@ -143,14 +143,14 @@ class Configuration
 
     public function refreshToken(BynderOauthProvider $oauthProvider)
     {
-        if(!$this->getToken()->hasExpired()) {
+        if (!$this->getToken()->hasExpired()) {
             return;
         }
 
         $oldRefreshToken =  $this->getToken()->getRefreshToken();
 
         $token = $oauthProvider->getAccessToken('refresh_token', [
-            'refresh_token' => $oldRefreshToken
+            'refresh_token' => $oldRefreshToken,
         ]);
 
         $options = $token->jsonSerialize();

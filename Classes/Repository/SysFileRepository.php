@@ -34,10 +34,13 @@ readonly class SysFileRepository
         private ResourceFactory $resourceFactory,
     ) {}
 
+    /**
+     * @return array<int, string>
+     */
     public function getFileIdentifiersOfStorage(
         int $storageUid,
-        $start = 0,
-        $numberOfItems = 0,
+        int $start = 0,
+        int $numberOfItems = 0,
     ): array {
         $queryBuilder = $this->getRestrictedQueryBuilder();
 

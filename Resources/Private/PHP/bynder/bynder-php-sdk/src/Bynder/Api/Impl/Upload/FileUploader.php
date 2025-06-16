@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) Bynder. All rights reserved.
  *
  * Licensed under the MIT License. For the full copyright and license information, please view the LICENSE
@@ -9,10 +9,8 @@
 
 namespace Bynder\Api\Impl\Upload;
 
-use Exception;
-use GuzzleHttp\Promise;
-use VirtualFileSystem\FileSystem;
 use Bynder\Api\Impl\AbstractRequestHandler;
+use GuzzleHttp\Promise;
 
 /**
  * Class used to upload files to Bynder.
@@ -22,25 +20,24 @@ class FileUploader
     /**
      * Max chunk size
      */
-    const CHUNK_SIZE = 1024 * 1024 * 5;
+    public const CHUNK_SIZE = 1024 * 1024 * 5;
 
     /**
      * Max polling iterations to wait for the asset to be converted.
      */
-    const MAX_POLLING_ITERATIONS = 60;
+    public const MAX_POLLING_ITERATIONS = 60;
 
     /**
      * Idle time between iterations in milliseconds.
      */
-    const POLLING_IDLE_TIME = 2000;
+    public const POLLING_IDLE_TIME = 2000;
 
     /**
      * Max polling iterations to wait for the asset to be converted.
      */
-    const MAX_CONCURRENT_CHUNKS = 1;
+    public const MAX_CONCURRENT_CHUNKS = 1;
 
     /**
-     *
      * @var AbstractRequestHandler Request handler used to communicate with the API.
      */
     private $requestHandler;
@@ -93,7 +90,7 @@ class FileUploader
      * @param $data array containing the file and media asset information.
      *
      * @return Promise\Promise file promise.
-     * @throws Exception
+     * @throws \Exception
      */
     public function uploadFile($data)
     {
@@ -101,7 +98,8 @@ class FileUploader
             ->then(
                 function () use ($data) {
                     return $this->requestUploadInformationAsync($data['filePath']);
-                })
+                }
+            )
             ->then(
                 function ($uploadRequestInfo) use ($data) {
                     if ($file = fopen($data['filePath'], 'rb')) {
@@ -112,16 +110,22 @@ class FileUploader
                         $chunkNumber = 0;
 
                         // This is where the magic happens. We create all the promises via an Iterator function.
-                        $promises = $this->uploadChunkIterator($file, $data['filePath'], $uploadRequestInfo,
-                            $numberOfChunks, $chunkNumber);
+                        $promises = $this->uploadChunkIterator(
+                            $file,
+                            $data['filePath'],
+                            $uploadRequestInfo,
+                            $numberOfChunks,
+                            $chunkNumber
+                        );
                         // After that we batch them all together using Each::ofLimitAll, which will guarantee all chunks have been uploaded properly.
                         $eachPromises = Promise\Each::ofLimitAll($promises, self::MAX_CONCURRENT_CHUNKS);
                         return $eachPromises->then(
                             function ($value) use ($uploadRequestInfo, $chunkNumber) {
                                 return ['requestInfo' => $uploadRequestInfo, 'chunkNumber' => $chunkNumber];
-                            });
+                            }
+                        );
                     } else {
-                        throw new Exception("File not Found");
+                        throw new \Exception('File not Found');
                     }
                 }
             )
@@ -137,9 +141,10 @@ class FileUploader
                             function ($response) use ($finalizeResponse) {
                                 return [
                                     'pollStatus' => $response,
-                                    'finalizeData' => $finalizeResponse
+                                    'finalizeData' => $finalizeResponse,
                                 ];
-                            });
+                            }
+                        );
                 }
             )
             ->then(
@@ -147,9 +152,9 @@ class FileUploader
                     if ($value['pollStatus'] != false) {
                         $data['importId'] = $value['finalizeData']['importId'];
                         return $this->saveMediaAsync($data);
-                    } else {
-                        throw new Exception("Converter did not finish. Upload failed.");
                     }
+                    throw new \Exception('Converter did not finish. Upload failed.');
+
                 }
             );
 
@@ -181,13 +186,15 @@ class FileUploader
      * @param $filePath
      *
      * @return Promise\Promise Relevant S3 file information, necessary for the file upload.
-     * @throws Exception
+     * @throws \Exception
      */
     private function requestUploadInformationAsync($filePath)
     {
-        return $this->requestHandler->sendRequestAsync('POST', 'api/upload/init',
+        return $this->requestHandler->sendRequestAsync(
+            'POST',
+            'api/upload/init',
             [
-                'form_params' => ['filename' => $filePath]
+                'form_params' => ['filename' => $filePath],
             ]
         );
     }
@@ -205,8 +212,14 @@ class FileUploader
      */
     private function uploadChunkAsync($filePath, $chunk, $uploadRequestInfo, $numberOfChunks, $chunkNumber)
     {
-        return $this->amazonApi->uploadPartToAmazon($filePath, $this->awsBucket, $uploadRequestInfo,
-            $chunkNumber, $chunk, $numberOfChunks)
+        return $this->amazonApi->uploadPartToAmazon(
+            $filePath,
+            $this->awsBucket,
+            $uploadRequestInfo,
+            $chunkNumber,
+            $chunk,
+            $numberOfChunks
+        )
             ->then(
                 function () use ($uploadRequestInfo, $chunkNumber) {
                     return $this->registerChunkAsync($uploadRequestInfo, $chunkNumber);
@@ -218,20 +231,21 @@ class FileUploader
      * Gets the closest Amazon S3 bucket location to upload to.
      *
      * @return Promise\FulfilledPromise Amazon S3 location url.
-     * @throws Exception
+     * @throws \Exception
      */
     private function getClosestUploadEndpoint()
     {
         if (isset($this->awsBucket)) {
             return new Promise\FulfilledPromise($this->awsBucket);
-        } else {
-            return $this->requestHandler->sendRequestAsync('GET', 'api/upload/endpoint')
-                ->then(
-                    function ($result) {
-                        $this->awsBucket = $result;
-                        return $result;
-                    });
         }
+        return $this->requestHandler->sendRequestAsync('GET', 'api/upload/endpoint')
+            ->then(
+                function ($result) {
+                    $this->awsBucket = $result;
+                    return $result;
+                }
+            );
+
     }
 
     /**
@@ -241,11 +255,11 @@ class FileUploader
      * @param $chunkNumber
      *
      * @return Promise\Promise
-     * @throws Exception
+     * @throws \Exception
      */
     private function registerChunkAsync($uploadRequestInfo, $chunkNumber)
     {
-        $s3Filename = sprintf("%s/p%d", $uploadRequestInfo['s3_filename'], $chunkNumber);
+        $s3Filename = sprintf('%s/p%d', $uploadRequestInfo['s3_filename'], $chunkNumber);
 
         $data = [
             'id' => $uploadRequestInfo['s3file']['uploadid'],
@@ -268,11 +282,11 @@ class FileUploader
      * @param array $originalData
      *
      * @return Promise\Promise
-     * @throws Exception
+     * @throws \Exception
      */
     private function finalizeUploadAsync($uploadRequestInfo, $chunkNumber, $originalData)
     {
-        $s3Filename = sprintf("%s/p%d", $uploadRequestInfo['s3_filename'], $chunkNumber);
+        $s3Filename = sprintf('%s/p%d', $uploadRequestInfo['s3_filename'], $chunkNumber);
 
         $data = [
             'id' => $uploadRequestInfo['s3file']['uploadid'],
@@ -298,7 +312,7 @@ class FileUploader
      * @param $finalizeResponse
      *
      * @return Promise\Promise Returns whether or not the file was uploaded successfully.
-     * @throws Exception
+     * @throws \Exception
      */
     private function hasFinishedSuccessfullyAsync($finalizeResponse)
     {
@@ -316,7 +330,7 @@ class FileUploader
                     }
                 }
                 return false;
-            }
+            },
         ]);
         return $eachPromises->promise();
     }
@@ -328,7 +342,7 @@ class FileUploader
      * @param $finalizeResponse
      *
      * @return \Generator
-     * @throws Exception
+     * @throws \Exception
      */
     public function pollStatusIterator($finalizeResponse)
     {
@@ -348,7 +362,7 @@ class FileUploader
      * @param int $delay
      *
      * @return Promise\Promise An array of the number successful and failed uploads.
-     * @throws Exception
+     * @throws \Exception
      */
     private function pollStatusAsync($query, $delay = 0)
     {
@@ -366,13 +380,13 @@ class FileUploader
      * @param array $data Array of relevant file upload data, such as uploadId and brandId.
      *
      * @return Promise\Promise The information of the uploaded file, including IDs and all final file urls.
-     * @throws Exception
+     * @throws \Exception
      */
     private function saveMediaAsync($data)
     {
-        $uri = "api/v4/media/save/";
+        $uri = 'api/v4/media/save/';
         if (isset($data['mediaId'])) {
-            $uri = sprintf("api/v4/media/" . $data['mediaId'] . "/save/");
+            $uri = sprintf('api/v4/media/' . $data['mediaId'] . '/save/');
             unset($data['mediaId']);
         }
         return $this->requestHandler->sendRequestAsync('POST', $uri, ['form_params' => $data]);

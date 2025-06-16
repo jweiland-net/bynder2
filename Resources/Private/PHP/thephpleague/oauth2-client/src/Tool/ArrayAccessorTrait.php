@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the league/oauth2-client library
  *
@@ -33,7 +34,7 @@ trait ArrayAccessorTrait
             return $default;
         }
 
-        if (strpos($key, '.') !== false) {
+        if (str_contains($key, '.')) {
             $keys = explode('.', $key);
 
             foreach ($keys as $innerKey) {

@@ -20,7 +20,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Service\FlexFormService;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Core\View\ViewInterface;
@@ -39,6 +38,9 @@ class BynderStatusElement extends AbstractFormElement
         private readonly FlexFormService $flexFormService,
     ) {}
 
+    /**
+     * @return array<string, string>
+     */
     public function render(): array
     {
         $resultArray = $this->initializeResultArray();
@@ -63,6 +65,8 @@ class BynderStatusElement extends AbstractFormElement
 
     /**
      * Get HTML to show the user that he is connected with his bynder account
+     *
+     * @param array<string, string> $bynderFalConfiguration
      */
     public function getHtmlForConnected(array $bynderFalConfiguration, ServerRequestInterface $request): string
     {
@@ -73,7 +77,7 @@ class BynderStatusElement extends AbstractFormElement
                 $bynderClientWrapper = $this->bynderClientFactory->createClientWrapper($bynderFalConfiguration);
                 $view->assignMultiple([
                     'account' => $this->bynderService->getCurrentUser($bynderClientWrapper->getBynderClient()),
-                    'expires' => $this->getExpires($bynderFalConfiguration, $bynderClientWrapper)
+                    'expires' => $this->getExpires($bynderFalConfiguration, $bynderClientWrapper),
                 ]);
 
                 return $view->render();
@@ -89,6 +93,8 @@ class BynderStatusElement extends AbstractFormElement
      * This method should be invoked only *after* completing any Bynder API request.
      * The reason is that the access token is automatically refreshed during a Bynder request if it has expired.
      * A Bynder request is required to obtain the updated "expire" value of the access token.
+     *
+     * @param array<string, string> $bynderFalConfiguration
      */
     protected function getExpires(array $bynderFalConfiguration, BynderClientWrapper $bynderClientWrapper): int
     {

@@ -49,6 +49,9 @@ class BynderService implements LoggerAwareInterface
         ]);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getCurrentUser(BynderClient $bynderClient): array
     {
         try {

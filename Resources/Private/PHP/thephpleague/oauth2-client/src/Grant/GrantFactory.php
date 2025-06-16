@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the league/oauth2-client library
  *
@@ -71,14 +72,14 @@ class GrantFactory
 
         $this->checkGrant($class);
 
-        return $this->setGrant($name, new $class);
+        return $this->setGrant($name, new $class());
     }
 
     /**
      * Determines if a variable is a valid grant.
      *
      * @param  mixed $class
-     * @return boolean
+     * @return bool
      */
     public function isGrant($class)
     {
@@ -90,7 +91,6 @@ class GrantFactory
      *
      * @throws InvalidGrantException
      * @param  mixed $class
-     * @return void
      */
     public function checkGrant($class)
     {

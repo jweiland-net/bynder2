@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) Bynder. All rights reserved.
  *
  * Licensed under the MIT License. For the full copyright and license information, please view the LICENSE
@@ -48,7 +48,7 @@ class Configuration
         $this->bynderDomain = $bynderDomain;
         $this->token = $token;
         $this->requestOptions = $requestOptions;
-        $this->rootDir = dirname(dirname(dirname(dirname(dirname(dirname(__FILE__))))));
+        $this->rootDir = dirname(dirname(dirname(dirname(dirname(__DIR__)))));
         $this->package = json_decode(file_get_contents($this->rootDir . '/composer.json'));
     }
 

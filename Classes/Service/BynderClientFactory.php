@@ -24,6 +24,7 @@ final readonly class BynderClientFactory
     /**
      * Instantiates a Bynder client for interacting with the Bynder API.
      *
+     * @param array<string, string> $configuration The configuration for the Bynder client.
      * @throws \Exception Thrown if the provided configuration is invalid.
      */
     public function createClient(array $configuration): BynderClient
@@ -40,6 +41,7 @@ final readonly class BynderClientFactory
      * This class includes an updated "expire" property after the first request, which serves as additional
      * information for EXT:backend form elements.
      *
+     * @param array<string, string> $configuration The configuration for the Bynder client.
      * @throws \Exception Thrown when the provided configuration is invalid.
      */
     public function createClientWrapper(array $configuration): BynderClientWrapper

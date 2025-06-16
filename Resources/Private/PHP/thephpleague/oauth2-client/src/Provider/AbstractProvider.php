@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the league/oauth2-client library
  *
@@ -18,7 +19,6 @@ use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\ClientInterface as HttpClientInterface;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
-use InvalidArgumentException;
 use League\OAuth2\Client\Grant\AbstractGrant;
 use League\OAuth2\Client\Grant\GrantFactory;
 use League\OAuth2\Client\OptionProvider\OptionProviderInterface;
@@ -32,7 +32,6 @@ use League\OAuth2\Client\Tool\QueryBuilderTrait;
 use League\OAuth2\Client\Tool\RequestFactory;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use UnexpectedValueException;
 
 /**
  * Represents a service provider (authorization server).
@@ -48,30 +47,30 @@ abstract class AbstractProvider
     /**
      * @var string|null Key used in a token response to identify the resource owner.
      */
-    const ACCESS_TOKEN_RESOURCE_OWNER_ID = null;
+    public const ACCESS_TOKEN_RESOURCE_OWNER_ID = null;
 
     /**
      * @var string HTTP method used to fetch access tokens.
      */
-    const METHOD_GET = 'GET';
+    public const METHOD_GET = 'GET';
 
     /**
      * @var string HTTP method used to fetch access tokens.
      */
-    const METHOD_POST = 'POST';
+    public const METHOD_POST = 'POST';
 
     /**
      * @var string PKCE method used to fetch authorization token.
      * The PKCE code challenge will be hashed with sha256 (recommended).
      */
-    const PKCE_METHOD_S256 = 'S256';
+    public const PKCE_METHOD_S256 = 'S256';
 
     /**
      * @var string PKCE method used to fetch authorization token.
      * The PKCE code challenge will be sent as plain text, this is NOT recommended.
      * Only use `plain` if no other option is possible.
      */
-    const PKCE_METHOD_PLAIN = 'plain';
+    public const PKCE_METHOD_PLAIN = 'plain';
 
     /**
      * @var string
@@ -96,7 +95,7 @@ abstract class AbstractProvider
     /**
      * @var string|null
      */
-    protected $pkceCode = null;
+    protected $pkceCode;
 
     /**
      * @var GrantFactory
@@ -406,7 +405,7 @@ abstract class AbstractProvider
      *
      * @param  array $options
      * @return array Authorization parameters
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     protected function getAuthorizationParameters(array $options)
     {
@@ -420,7 +419,7 @@ abstract class AbstractProvider
 
         $options += [
             'response_type'   => 'code',
-            'approval_prompt' => 'auto'
+            'approval_prompt' => 'auto',
         ];
 
         if (is_array($options['scope'])) {
@@ -446,7 +445,7 @@ abstract class AbstractProvider
             } elseif ($pkceMethod === static::PKCE_METHOD_PLAIN) {
                 $options['code_challenge'] = $this->pkceCode;
             } else {
-                throw new InvalidArgumentException('Unknown PKCE method "' . $pkceMethod . '".');
+                throw new \InvalidArgumentException('Unknown PKCE method "' . $pkceMethod . '".');
             }
             $options['code_challenge_method'] = $pkceMethod;
         }
@@ -478,7 +477,7 @@ abstract class AbstractProvider
      *
      * @param  array $options
      * @return string Authorization URL
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function getAuthorizationUrl(array $options = [])
     {
@@ -495,7 +494,7 @@ abstract class AbstractProvider
      * @param  array $options
      * @param  callable|null $redirectHandler
      * @return mixed
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function authorize(
         array $options = [],
@@ -619,7 +618,7 @@ abstract class AbstractProvider
      * @param  array<string, mixed> $options
      * @return AccessTokenInterface
      * @throws IdentityProviderException
-     * @throws UnexpectedValueException
+     * @throws \UnexpectedValueException
      * @throws GuzzleException
      */
     public function getAccessToken($grant, array $options = [])
@@ -644,8 +643,8 @@ abstract class AbstractProvider
         $params   = $grant->prepareRequestParameters($params, $options);
         $request  = $this->getAccessTokenRequest($params);
         $response = $this->getParsedResponse($request);
-        if (false === is_array($response)) {
-            throw new UnexpectedValueException(
+        if (is_array($response) === false) {
+            throw new \UnexpectedValueException(
                 'Invalid response received from Authorization Server. Expected JSON.'
             );
         }
@@ -724,7 +723,7 @@ abstract class AbstractProvider
      * @param  RequestInterface $request
      * @return mixed
      * @throws IdentityProviderException
-     * @throws UnexpectedValueException
+     * @throws \UnexpectedValueException
      * @throws GuzzleException
      */
     public function getParsedResponse(RequestInterface $request)
@@ -747,15 +746,15 @@ abstract class AbstractProvider
      *
      * @param  string $content JSON content from response body
      * @return array Parsed JSON data
-     * @throws UnexpectedValueException if the content could not be parsed
+     * @throws \UnexpectedValueException if the content could not be parsed
      */
     protected function parseJson($content)
     {
         $content = json_decode($content, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new UnexpectedValueException(sprintf(
-                "Failed to parse JSON response: %s",
+            throw new \UnexpectedValueException(sprintf(
+                'Failed to parse JSON response: %s',
                 json_last_error_msg()
             ));
         }
@@ -777,16 +776,16 @@ abstract class AbstractProvider
     /**
      * Parses the response according to its content-type header.
      *
-     * @throws UnexpectedValueException
+     * @throws \UnexpectedValueException
      * @param  ResponseInterface $response
      * @return array
      */
     protected function parseResponse(ResponseInterface $response)
     {
-        $content = (string) $response->getBody();
+        $content = (string)$response->getBody();
         $type = $this->getContentType($response);
 
-        if (strpos($type, 'urlencoded') !== false) {
+        if (str_contains($type, 'urlencoded')) {
             parse_str($content, $parsed);
             return $parsed;
         }
@@ -796,13 +795,13 @@ abstract class AbstractProvider
         // exception if the JSON could not be parsed when it was expected to.
         try {
             return $this->parseJson($content);
-        } catch (UnexpectedValueException $e) {
-            if (strpos($type, 'json') !== false) {
+        } catch (\UnexpectedValueException $e) {
+            if (str_contains($type, 'json')) {
                 throw $e;
             }
 
             if ($response->getStatusCode() == 500) {
-                throw new UnexpectedValueException(
+                throw new \UnexpectedValueException(
                     'An OAuth server error was encountered that did not contain a JSON body',
                     0,
                     $e
@@ -819,7 +818,6 @@ abstract class AbstractProvider
      * @throws IdentityProviderException
      * @param  ResponseInterface $response
      * @param  array|string $data Parsed response data
-     * @return void
      */
     abstract protected function checkResponse(ResponseInterface $response, $data);
 
@@ -874,7 +872,7 @@ abstract class AbstractProvider
      * @param  AccessToken $token
      * @return ResourceOwnerInterface
      * @throws IdentityProviderException
-     * @throws UnexpectedValueException
+     * @throws \UnexpectedValueException
      * @throws GuzzleException
      */
     public function getResourceOwner(AccessToken $token)
@@ -890,7 +888,7 @@ abstract class AbstractProvider
      * @param  AccessToken $token
      * @return mixed
      * @throws IdentityProviderException
-     * @throws UnexpectedValueException
+     * @throws \UnexpectedValueException
      * @throws GuzzleException
      */
     protected function fetchResourceOwnerDetails(AccessToken $token)
@@ -901,8 +899,8 @@ abstract class AbstractProvider
 
         $response = $this->getParsedResponse($request);
 
-        if (false === is_array($response)) {
-            throw new UnexpectedValueException(
+        if (is_array($response) === false) {
+            throw new \UnexpectedValueException(
                 'Invalid response received from Authorization Server. Expected JSON.'
             );
         }

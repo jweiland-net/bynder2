@@ -1,4 +1,5 @@
 <?php
+
 namespace Bynder\Api;
 
 use Bynder\Api\Impl\AssetBankManager;
@@ -26,7 +27,7 @@ class BynderClient
     {
         if ($configuration instanceof PermanentTokens\Configuration) {
             $this->requestHandler = new PermanentTokens\RequestHandler($configuration);
-        } else if($configuration instanceof OAuth2\Configuration) {
+        } elseif ($configuration instanceof OAuth2\Configuration) {
             $this->requestHandler = new OAuth2\RequestHandler($configuration);
         } else {
             throw new \Exception('Invalid configuration passed');
@@ -42,7 +43,7 @@ class BynderClient
      */
     public function getAssetBankManager()
     {
-        if(!isset($this->assetBankManager)) {
+        if (!isset($this->assetBankManager)) {
             $this->assetBankManager = new AssetBankManager($this->requestHandler);
         }
 
@@ -61,7 +62,7 @@ class BynderClient
     {
         return $this->requestHandler->getAuthorizationUrl([
             'state' => $state,
-            'scope' => implode(' ', $scope)
+            'scope' => implode(' ', $scope),
         ]);
     }
 
@@ -104,8 +105,7 @@ class BynderClient
     {
         if ($includeInactive) {
             $inactive = '1';
-        }
-        else {
+        } else {
             $inactive = '0';
         }
         return $this->requestHandler->sendRequestAsync('GET', "api/v4/users/?includeInActive=$inactive");
@@ -122,9 +122,11 @@ class BynderClient
      */
     public function getUser($userId = '', $query = null)
     {
-        return $this->requestHandler->sendRequestAsync('GET', "api/v4/users/$userId",
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            "api/v4/users/$userId",
             [
-                'query' => $query
+                'query' => $query,
             ]
         );
     }
@@ -137,7 +139,7 @@ class BynderClient
      */
     public function getCurrentUser()
     {
-        return $this->requestHandler->sendRequestAsync('GET', "api/v4/currentUser/");
+        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/currentUser/');
     }
 
     /**

@@ -20,9 +20,9 @@ $EM_CONF[$_EXTKEY] = [
     ],
     'autoload' => [
         'psr-4' => [
-            "JWeiland\\Bynder2\\" => "Classes",
-            "League\\OAuth2\\Client\\" => "Resources/Private/PHP/thephpleague/oauth2-client/src",
-            "Bynder\\" => "Resources/Private/PHP/bynder/bynder-php-sdk/src/Bynder",
+            'JWeiland\\Bynder2\\' => 'Classes',
+            'League\\OAuth2\\Client\\' => 'Resources/Private/PHP/thephpleague/oauth2-client/src',
+            'Bynder\\' => 'Resources/Private/PHP/bynder/bynder-php-sdk/src/Bynder',
         ],
     ],
 ];
