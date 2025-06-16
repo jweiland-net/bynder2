@@ -4,6 +4,40 @@
 ChangeLog
 =========
 
+Version 4.0.0 Release Notes
+===========================
+
+*   **Compatibility**: Add full TYPO3 v13 LTS support and compatibility improvements
+*   **Features**:
+
+    *   Implement sorting by `crdate DESC` for Bynder FileBrowser
+    *   Mark Bynder Driver as read-only to avoid unwanted modifications
+    *   Add support for processing Bynder URLs using new `ImageProcessingInstructions`
+    *   Set processed file records as non-executed to prevent saving them in `sys_file_processedfile`
+    *   Set Bynder CDN URLs to read-only for data integrity
+    *   Add `.editorconfig` for consistent code formatting
+    *   Add documentation for Content Security Policy (CSP) headers including PHP example
+    *   Improve event listener documentation with additional explanation
+
+*   **Bugfixes**:
+
+    *   Repair download mechanism and introduce local processing fallback
+    *   Fix query handling in `SysFileRepository` to support remote driver use cases
+    *   Delete missing remote files during synchronization to maintain consistency
+    *   Ensure correct sorting using creation date when browsing Bynder assets
+
+*   **Code Quality**:
+
+    *   Apply TYPO3 Core Coding Guidelines (CGL)
+    *   Apply PHPStan fixes for static analysis compliance
+    *   Clean up codebase and streamline unit tests
+
+*   **Maintenance**:
+
+    *   Update README badges
+    *   Migrate documentation to `guides.xml` format
+    *   Integrate TYPO3 Testing Framework
+
 Version 3.0.0 Release Notes
 ===========================
 
