@@ -25,10 +25,11 @@ readonly class BynderStorageFactory
     ) {}
 
     /**
-     * @return \SplObjectStorage<ResourceStorage, null>
+     * @return \SplObjectStorage<ResourceStorage, mixed>
      */
     public function getBynderStorages(): \SplObjectStorage
     {
+        /** @var \SplObjectStorage<ResourceStorage, mixed> $bynderStorages */
         $bynderStorages = new \SplObjectStorage();
 
         foreach ($this->storageRepository->findByStorageType('bynder2') as $bynderStorage) {

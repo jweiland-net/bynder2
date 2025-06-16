@@ -15,6 +15,10 @@ class GuzzleConfiguration
 {
     private const DEFAULT_CONNECT_TIMEOUT = 10;
 
+    /**
+     * @param array<string, mixed> $typo3RequestOptions
+     * @return array<string, mixed>
+     */
     public function getConfiguration(array $typo3RequestOptions): array
     {
         $typo3RequestOptions['connect_timeout'] = (int)($typo3RequestOptions['connect_timeout'] ?? 0);
@@ -23,7 +27,7 @@ class GuzzleConfiguration
         // Set default timeouts if not set.
         if ($typo3RequestOptions['timeout'] === 0) {
             // We subtract 5 seconds to ensure PHP has sufficient time to handle potential failures gracefully
-            $maxExecutionTimeout = (int)(ini_get('max_execution_time') ?? 30);
+            $maxExecutionTimeout = (int)(ini_get('max_execution_time') ?: 30);
             $typo3RequestOptions['timeout'] = $maxExecutionTimeout - 5;
         }
 

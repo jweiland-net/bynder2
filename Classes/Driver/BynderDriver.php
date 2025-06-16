@@ -43,6 +43,9 @@ class BynderDriver extends AbstractDriver
 
     protected FrontendInterface $cache;
 
+    /**
+     * @var array<string, mixed>
+     */
     protected array $fileExistsCache = [];
 
     private const DEFAULT_PROPERTIES_TO_EXTRACT = [
@@ -59,6 +62,9 @@ class BynderDriver extends AbstractDriver
         'folder_hash',
     ];
 
+    /**
+     * @param array<string, mixed> $configuration
+     */
     public function __construct(array $configuration)
     {
         parent::__construct($configuration);
@@ -105,7 +111,7 @@ class BynderDriver extends AbstractDriver
         return '/';
     }
 
-    public function getParentFolderIdentifierOfIdentifier($fileIdentifier): string
+    public function getParentFolderIdentifierOfIdentifier(string $fileIdentifier): string
     {
         // Bynder has no parent folders. So just return the root folder
         return '/';
@@ -114,30 +120,30 @@ class BynderDriver extends AbstractDriver
     /**
      * This driver is marked as non-public, so this will never be called:
      */
-    public function getPublicUrl($identifier): string
+    public function getPublicUrl(string $identifier): string
     {
         return '';
     }
 
-    public function createFolder($newFolderName, $parentFolderIdentifier = '', $recursive = false): string
-    {
-        // Bynder has no folders and cannot create any folders. Do nothing, but give a valid feedback to FAL
-        return '';
+    public function createFolder(
+        string $newFolderName,
+        string $parentFolderIdentifier = '',
+        bool $recursive = false
+    ): string {
+        throw new \RuntimeException('Bynder driver is readonly. Folders cannot be created.');
     }
 
-    public function renameFolder($folderIdentifier, $newName): array
+    public function renameFolder(string $folderIdentifier, string $newName): array
     {
-        // Bynder has no folders and cannot rename any folders. Do nothing, but give a valid feedback to FAL
-        return [];
+        throw new \RuntimeException('Bynder driver is readonly. Folders cannot be renamed.');
     }
 
-    public function deleteFolder($folderIdentifier, $deleteRecursively = false): bool
+    public function deleteFolder(string $folderIdentifier, bool $deleteRecursively = false): bool
     {
-        // Bynder has no folders and cannot delete any folders. Do nothing but give TRUE as feedback to FAL
-        return true;
+        throw new \RuntimeException('Bynder driver is readonly. Folders cannot be deleted.');
     }
 
-    public function fileExists($fileIdentifier): bool
+    public function fileExists(string $fileIdentifier): bool
     {
         // Early return for root folder "/"
         if ($fileIdentifier === '/') {
@@ -153,79 +159,86 @@ class BynderDriver extends AbstractDriver
         return $this->fileExistsCache[$fileIdentifier];
     }
 
-    public function folderExists($folderIdentifier): bool
+    public function folderExists(string $folderIdentifier): bool
     {
         // Bynder does not work with folder structures. So just return true for the root folder. Else false
         return $folderIdentifier === '/';
     }
 
-    public function isFolderEmpty($folderIdentifier): bool
+    public function isFolderEmpty(string $folderIdentifier): bool
     {
         // Just count the files in the root folder
         return (bool)$this->countFilesInFolder('/');
     }
 
-    public function addFile($localFilePath, $targetFolderIdentifier, $newFileName = '', $removeOriginal = true): string
-    {
-        // Bynder driver is readonly
-        return '';
+    public function addFile(
+        string $localFilePath,
+        string $targetFolderIdentifier,
+        string $newFileName = '',
+        bool $removeOriginal = true
+    ): string {
+        throw new \RuntimeException('Bynder driver is readonly. Files cannot be added.');
     }
 
-    public function createFile($fileName, $parentFolderIdentifier): string
+    public function createFile(string $fileName, string $parentFolderIdentifier): string
     {
-        // Bynder driver is readonly
-        return '';
+        throw new \RuntimeException('Bynder driver is readonly. Files cannot be created.');
     }
 
-    public function copyFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $fileName): string
-    {
-        // Bynder works with just ONE folder. So, there is no need to copy file within the same folder.
-        return $fileIdentifier;
+    public function copyFileWithinStorage(
+        string $fileIdentifier,
+        string $targetFolderIdentifier,
+        string $fileName
+    ): string {
+        throw new \RuntimeException('Bynder driver is readonly. Files cannot be copied within storage.');
     }
 
-    public function renameFile($fileIdentifier, $newName): string
+    public function renameFile(string $fileIdentifier, string $newName): string
     {
-        // Bynder driver is readonly
-        return '';
+        throw new \RuntimeException('Bynder driver is readonly. Files cannot be renamed.');
     }
 
-    public function replaceFile($fileIdentifier, $localFilePath): bool
+    public function replaceFile(string $fileIdentifier, string $localFilePath): bool
     {
-        // Bynder driver is readonly
-        return false;
+        throw new \RuntimeException('Bynder driver is readonly. Files cannot be replaced.');
     }
 
-    public function deleteFile($fileIdentifier): bool
+    public function deleteFile(string $fileIdentifier): bool
     {
-        // Bynder driver is readonly
-        return false;
+        throw new \RuntimeException('Bynder driver is readonly. Files cannot be deleted.');
     }
 
-    public function hash($fileIdentifier, $hashAlgorithm): string
+    public function hash(string $fileIdentifier, string $hashAlgorithm): string
     {
         // All core calls were done with sha1. No need to check any other $hashAlgorithm
         return sha1($fileIdentifier);
     }
 
-    public function moveFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $newFileName): string
-    {
-        // Bynder works with just ONE folder, so files can't be moved.
-        return $fileIdentifier;
+    public function moveFileWithinStorage(
+        string $fileIdentifier,
+        string $targetFolderIdentifier,
+        string $newFileName
+    ): string {
+        throw new \RuntimeException('Bynder driver is readonly. Files cannot be moved within storage.');
     }
 
-    public function moveFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName): array
-    {
-        // Bynder does not work with folder structures. So just return a valid value for FAL
-        return [];
+    public function moveFolderWithinStorage(
+        string $sourceFolderIdentifier,
+        string $targetFolderIdentifier,
+        string $newFolderName
+    ): array {
+        throw new \RuntimeException('Bynder driver is readonly. Folders cannot be moved within storage.');
     }
 
-    public function copyFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName): bool
-    {
-        // Bynder does not work with folder structures. So just return TRUE for FAL
-        return true;
+    public function copyFolderWithinStorage(
+        string $sourceFolderIdentifier,
+        string $targetFolderIdentifier,
+        string $newFolderName
+    ): bool {
+        throw new \RuntimeException('Bynder driver is readonly. Folders cannot be copied within storage.');
     }
 
-    public function getFileContents($fileIdentifier): string
+    public function getFileContents(string $fileIdentifier): string
     {
         try {
             $client = $this->bynderClientFactory->createClientWrapper($this->configuration);
@@ -238,29 +251,28 @@ class BynderDriver extends AbstractDriver
         return '';
     }
 
-    public function setFileContents($fileIdentifier, $contents): int
+    public function setFileContents(string $fileIdentifier, string $contents): int
     {
-        // Bynder driver is readonly
-        return 0;
+        throw new \RuntimeException('Bynder driver is readonly. Files content cannot be written.');
     }
 
-    public function fileExistsInFolder($fileName, $folderIdentifier): bool
+    public function fileExistsInFolder(string $fileName, string $folderIdentifier): bool
     {
         return $this->fileExists($folderIdentifier . $fileName);
     }
 
-    public function folderExistsInFolder($folderName, $folderIdentifier): bool
+    public function folderExistsInFolder(string $folderName, string $folderIdentifier): bool
     {
         // Bynder has only ONE folder. So there never can be a folder IN another folder
         return false;
     }
 
-    public function getFileForLocalProcessing($fileIdentifier, $writable = true): string
+    public function getFileForLocalProcessing(string $fileIdentifier, bool $writable = true): string
     {
         return $this->copyFileToTemporaryPath($fileIdentifier);
     }
 
-    public function getPermissions($identifier): array
+    public function getPermissions(string $identifier): array
     {
         // Currently, only READ permission is implemented
         return [
@@ -269,20 +281,20 @@ class BynderDriver extends AbstractDriver
         ];
     }
 
-    public function dumpFileContents($identifier): void
+    public function dumpFileContents(string $identifier): void
     {
         $handle = fopen('php://output', 'wb');
         fwrite($handle, $this->getFileContents($identifier));
         fclose($handle);
     }
 
-    public function isWithin($folderIdentifier, $identifier): bool
+    public function isWithin(string $folderIdentifier, string $identifier): bool
     {
         // As Bynder just has only ONE folder, this is always true
         return $folderIdentifier === '/' || $folderIdentifier === '';
     }
 
-    public function getFileInfoByIdentifier($fileIdentifier, array $propertiesToExtract = []): array
+    public function getFileInfoByIdentifier(string $fileIdentifier, array $propertiesToExtract = []): array
     {
         // Early return for "/"
         if ($fileIdentifier === '/') {
@@ -321,7 +333,11 @@ class BynderDriver extends AbstractDriver
         return $properties;
     }
 
-    public function getSpecificFileInformation($fileResponse, $property): string
+    /**
+     * @param array<string, mixed> $fileResponse
+     * @throws InvalidFileNameException
+     */
+    public function getSpecificFileInformation(array $fileResponse, string $property): string
     {
         switch ($property) {
             case 'size':
@@ -379,7 +395,10 @@ class BynderDriver extends AbstractDriver
         throw new \InvalidArgumentException(sprintf('The information "%s" is not available.', $property));
     }
 
-    public function getFolderInfoByIdentifier($folderIdentifier): array
+    /**
+     * @return array<string, int|string>
+     */
+    public function getFolderInfoByIdentifier(string $folderIdentifier): array
     {
         // Bynder has just ONE root folder
         return [
@@ -389,19 +408,23 @@ class BynderDriver extends AbstractDriver
         ];
     }
 
-    public function getFileInFolder($fileName, $folderIdentifier): string
+    public function getFileInFolder(string $fileName, string $folderIdentifier): string
     {
         return $this->canonicalizeAndCheckFileIdentifier('/' . $fileName);
     }
 
+    /**
+     * @param array<int, mixed> $filenameFilterCallbacks
+     * @return array<int, string>
+     */
     public function getFilesInFolder(
-        $folderIdentifier,
-        $start = 0,
-        $numberOfItems = 0,
-        $recursive = false,
+        string $folderIdentifier,
+        int $start = 0,
+        int $numberOfItems = 0,
+        bool $recursive = false,
         array $filenameFilterCallbacks = [],
-        $sort = '',
-        $sortRev = false
+        string $sort = '',
+        bool $sortRev = false
     ): array {
         // Respecting the sorting order is not practical, as FileList::sortResources
         // manually sorts all thousands of files in the "file list" module.
@@ -412,27 +435,33 @@ class BynderDriver extends AbstractDriver
         );
     }
 
-    public function getFolderInFolder($folderName, $folderIdentifier): string
+    public function getFolderInFolder(string $folderName, string $folderIdentifier): string
     {
         // As Bynder does not have subfolders, this method should never be called.
         return '';
     }
 
+    /**
+     * @param array<int, mixed> $folderNameFilterCallbacks
+     */
     public function getFoldersInFolder(
-        $folderIdentifier,
-        $start = 0,
-        $numberOfItems = 0,
-        $recursive = false,
+        string $folderIdentifier,
+        int $start = 0,
+        int $numberOfItems = 0,
+        bool $recursive = false,
         array $folderNameFilterCallbacks = [],
-        $sort = '',
-        $sortRev = false
+        string $sort = '',
+        bool $sortRev = false
     ): array {
         // Bynder does not work folder-based. So just return an empty array for 0 folders.
         return [];
     }
 
-    public function countFilesInFolder($folderIdentifier, $recursive = false, array $filenameFilterCallbacks = []): int
-    {
+    public function countFilesInFolder(
+        string $folderIdentifier,
+        bool $recursive = false,
+        array $filenameFilterCallbacks = []
+    ): int {
         if ($this->storageUid !== null) {
             return $this->fileRepository->countFilesOfStorage($this->storageUid);
         }
@@ -441,8 +470,8 @@ class BynderDriver extends AbstractDriver
     }
 
     public function countFoldersInFolder(
-        $folderIdentifier,
-        $recursive = false,
+        string $folderIdentifier,
+        bool $recursive = false,
         array $folderNameFilterCallbacks = []
     ): int {
         // Bynder does not work folder-based. So just return 0.
@@ -452,7 +481,7 @@ class BynderDriver extends AbstractDriver
     /**
      * @throws InvalidPathException
      */
-    protected function canonicalizeAndCheckFilePath($filePath): string
+    protected function canonicalizeAndCheckFilePath(string $filePath): string
     {
         $filePath = PathUtility::getCanonicalPath($filePath);
 
@@ -465,7 +494,7 @@ class BynderDriver extends AbstractDriver
         return $filePath;
     }
 
-    protected function canonicalizeAndCheckFileIdentifier($fileIdentifier): string
+    protected function canonicalizeAndCheckFileIdentifier(string $fileIdentifier): string
     {
         if ($fileIdentifier !== '') {
             $fileIdentifier = $this->canonicalizeAndCheckFilePath($fileIdentifier);
@@ -478,7 +507,7 @@ class BynderDriver extends AbstractDriver
         return $fileIdentifier;
     }
 
-    protected function canonicalizeAndCheckFolderIdentifier($folderIdentifier): string
+    protected function canonicalizeAndCheckFolderIdentifier(string $folderIdentifier): string
     {
         if ($folderIdentifier === '/') {
             return $folderIdentifier;
@@ -488,23 +517,6 @@ class BynderDriver extends AbstractDriver
     }
 
     /**
-     * Checks if a resource exists - does not care for the type (file or folder).
-     */
-    public function resourceExists(string $identifier): bool
-    {
-        // As Bynder does not work with folders, we don't need to check for any sub-folder identifiers
-        if ($identifier === '') {
-            throw new \InvalidArgumentException('Resource path cannot be empty');
-        }
-
-        if ($identifier === '/') {
-            return true;
-        }
-
-        return $this->fileExists($identifier);
-    }
-
-    /*
      * Copies a file to a temporary path and returns that path.
      */
     protected function copyFileToTemporaryPath(string $fileIdentifier): string
@@ -522,7 +534,7 @@ class BynderDriver extends AbstractDriver
      * We have to override TYPO3's version of this method, as Bynder identifiers do not have an appended
      * file extension.
      */
-    protected function getTemporaryPathForFile($fileIdentifier): string
+    protected function getTemporaryPathForFile(string $fileIdentifier): string
     {
         // Fallback to "jpg". FAL needs an extension, else img processing will not work
         $fileExtension = $this->getFileInfoByIdentifier($fileIdentifier, ['extension'])['extension'] ?? 'jpg';
@@ -536,7 +548,7 @@ class BynderDriver extends AbstractDriver
     /**
      * This is a copy of LocalDriver
      */
-    public function sanitizeFileName($fileName, $charset = 'utf-8'): string
+    public function sanitizeFileName(string $fileName, string $charset = 'utf-8'): string
     {
         // Handle UTF-8 characters
         if ($GLOBALS['TYPO3_CONF_VARS']['SYS']['UTF8filesystem']) {
@@ -580,11 +592,6 @@ class BynderDriver extends AbstractDriver
     protected function getFlashMessageQueue(): FlashMessageQueue
     {
         return $this->flashMessageService->getMessageQueueByIdentifier();
-    }
-
-    protected function getBynderClientFactory(): BynderClientFactory
-    {
-        return GeneralUtility::makeInstance(BynderClientFactory::class);
     }
 
     private function getCacheManager(): CacheManager

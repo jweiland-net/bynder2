@@ -16,7 +16,7 @@ use JWeiland\Bynder2\Configuration\BynderFalConfiguration;
 class BynderFalConfigurationFactory
 {
     /**
-     * @param array $configuration The configuration from bynder FAL driver. Can also be the result of a sys_file_storage request
+     * @param array<string, int|string> $configuration The configuration from bynder FAL driver. Can also be the result of a sys_file_storage request
      */
     public function createConfiguration(array $configuration): BynderFalConfiguration
     {

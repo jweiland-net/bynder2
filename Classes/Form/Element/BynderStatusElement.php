@@ -38,6 +38,9 @@ class BynderStatusElement extends AbstractFormElement
         private readonly FlexFormService $flexFormService,
     ) {}
 
+    /**
+     * @return array<string, string>
+     */
     public function render(): array
     {
         $resultArray = $this->initializeResultArray();
@@ -62,6 +65,8 @@ class BynderStatusElement extends AbstractFormElement
 
     /**
      * Get HTML to show the user that he is connected with his bynder account
+     *
+     * @param array<string, string> $bynderFalConfiguration
      */
     public function getHtmlForConnected(array $bynderFalConfiguration, ServerRequestInterface $request): string
     {
@@ -88,6 +93,8 @@ class BynderStatusElement extends AbstractFormElement
      * This method should be invoked only *after* completing any Bynder API request.
      * The reason is that the access token is automatically refreshed during a Bynder request if it has expired.
      * A Bynder request is required to obtain the updated "expire" value of the access token.
+     *
+     * @param array<string, string> $bynderFalConfiguration
      */
     protected function getExpires(array $bynderFalConfiguration, BynderClientWrapper $bynderClientWrapper): int
     {

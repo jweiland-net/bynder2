@@ -1,3 +1,6 @@
 parameters:
-  # Ignore specific errors:
   ignoreErrors:
+    - message: '#Parameter \#5 \$token of class Bynder\\Api\\Impl\\OAuth2\\Configuration constructor expects string\|null, League\\OAuth2\\Client\\Token\\AccessToken\|null given#'
+      path: '%currentWorkingDirectory%/Classes/Configuration/BynderAccessTokenConfiguration.php'
+    - message: '#Method JWeiland\\Bynder2\\Driver\\BynderDriver::getFolderInFolder\(\) should return non-empty-string but returns ''.#'
+      path: '%currentWorkingDirectory%/Classes/Driver/BynderDriver.php'

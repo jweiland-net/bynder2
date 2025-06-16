@@ -28,6 +28,9 @@ class BynderAuthorizationUrlElement extends AbstractFormElement
         private readonly BynderClientFactory $bynderClientFactory,
     ) {}
 
+    /**
+     * @return array<string, string>
+     */
     public function render(): array
     {
         $resultArray = $this->initializeResultArray();
@@ -48,6 +51,8 @@ class BynderAuthorizationUrlElement extends AbstractFormElement
 
     /**
      * Get HTML to show the user that he is connected with his bynder account
+     *
+     * @param array<string, string> $bynderFalConfiguration
      */
     public function getHtmlForAuthorizationUrl(array $bynderFalConfiguration): string
     {
@@ -66,6 +71,7 @@ class BynderAuthorizationUrlElement extends AbstractFormElement
     }
 
     /**
+     * @param array<string, string> $configuration
      * @throws \Exception
      */
     protected function getBynderClient(array $configuration): BynderClient
