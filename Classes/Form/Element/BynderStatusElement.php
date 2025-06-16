@@ -20,7 +20,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Service\FlexFormService;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Core\View\ViewInterface;
@@ -73,7 +72,7 @@ class BynderStatusElement extends AbstractFormElement
                 $bynderClientWrapper = $this->bynderClientFactory->createClientWrapper($bynderFalConfiguration);
                 $view->assignMultiple([
                     'account' => $this->bynderService->getCurrentUser($bynderClientWrapper->getBynderClient()),
-                    'expires' => $this->getExpires($bynderFalConfiguration, $bynderClientWrapper)
+                    'expires' => $this->getExpires($bynderFalConfiguration, $bynderClientWrapper),
                 ]);
 
                 return $view->render();

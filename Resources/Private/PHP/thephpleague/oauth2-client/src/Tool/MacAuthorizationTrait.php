@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the league/oauth2-client library
  *
@@ -36,7 +37,7 @@ trait MacAuthorizationTrait
      * Returns the MAC signature for the current request.
      *
      * @param  string $id
-     * @param  integer $ts
+     * @param  int $ts
      * @param  string $nonce
      * @return string
      */

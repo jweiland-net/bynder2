@@ -29,7 +29,7 @@ class ExtConfTest extends FunctionalTestCase
      * @var array
      */
     protected $testExtensionsToLoad = [
-        'typo3conf/ext/bynder2'
+        'typo3conf/ext/bynder2',
     ];
 
     protected function setUp(): void

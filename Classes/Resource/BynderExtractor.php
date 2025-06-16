@@ -33,7 +33,7 @@ final readonly class BynderExtractor implements ExtractorInterface
     public function getDriverRestrictions(): array
     {
         return [
-            'bynder2'
+            'bynder2',
         ];
     }
 

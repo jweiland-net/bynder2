@@ -55,7 +55,6 @@ final readonly class BynderAccessTokenConfiguration implements BynderTokenConfig
         return null;
     }
 
-
     private function isValidConfiguration(): bool
     {
         // We have to add "https://" here temporarily, as needed by "isValidUrl"

@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) Bynder. All rights reserved.
  *
  * Licensed under the MIT License. For the full copyright and license information, please view the LICENSE
@@ -43,7 +43,9 @@ class AssetBankManager
      */
     public function getUsers($query = null)
     {
-        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/users/',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/users/',
             ['query' => $query]
         );
     }
@@ -67,7 +69,7 @@ class AssetBankManager
      */
     public function getAccount()
     {
-        return $this->requestHandler->sendRequestAsync('GET', "api/v4/account/");
+        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/account/');
     }
 
     /**
@@ -90,7 +92,9 @@ class AssetBankManager
      */
     public function getMediaList($query = null)
     {
-        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/media/',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/media/',
             ['query' => $query]
         );
     }
@@ -105,7 +109,9 @@ class AssetBankManager
      */
     public function getMediaInfo($mediaId, $query = null)
     {
-        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/media/' . $mediaId . '/',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/media/' . $mediaId . '/',
             ['query' => $query]
         );
     }
@@ -120,7 +126,9 @@ class AssetBankManager
      */
     public function getMetaproperties($query = null)
     {
-        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/metaproperties/',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/metaproperties/',
             ['query' => $query]
         );
     }
@@ -135,7 +143,8 @@ class AssetBankManager
     public function getMetaproperty($propertyId, $query = null)
     {
         return $this->requestHandler->sendRequestAsync(
-            'GET', 'api/v4/metaproperties/' . $propertyId . '/',
+            'GET',
+            'api/v4/metaproperties/' . $propertyId . '/',
             ['query' => $query]
         );
     }
@@ -149,8 +158,10 @@ class AssetBankManager
      */
     public function getMetapropertyDependencies($propertyId)
     {
-        return $this->requestHandler->sendRequestAsync('GET',
-            'api/v4/metaproperties/' . $propertyId . '/dependencies/');
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/metaproperties/' . $propertyId . '/dependencies/'
+        );
     }
 
     /**
@@ -162,7 +173,9 @@ class AssetBankManager
      */
     public function getMetapropertyOptions($query)
     {
-        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/metaproperties/options/',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/metaproperties/options/',
             ['query' => $query]
         );
     }
@@ -177,7 +190,9 @@ class AssetBankManager
      */
     public function getMetapropertyOptionsById($propertyId, $query)
     {
-        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/metaproperties/' . $propertyId . '/options/',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/metaproperties/' . $propertyId . '/options/',
             ['query' => $query]
         );
     }
@@ -238,8 +253,10 @@ class AssetBankManager
      */
     public function getMetapropertyOptionDependencies($propertyId)
     {
-        return $this->requestHandler->sendRequestAsync('GET',
-            'api/v4/metaproperties/' . $propertyId . '/options/dependencies/');
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/metaproperties/' . $propertyId . '/options/dependencies/'
+        );
     }
 
     /**
@@ -253,7 +270,8 @@ class AssetBankManager
      */
     public function getMetapropertySpecificOptionDependencies($propertyId, $optionId, $query)
     {
-        return $this->requestHandler->sendRequestAsync('GET',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
             'api/v4/metaproperties/' . $propertyId . '/options/' . $optionId . '/dependencies/',
             ['query' => $query]
         );
@@ -268,7 +286,9 @@ class AssetBankManager
      */
     public function getTags($query = null)
     {
-        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/tags/',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/tags/',
             ['query' => $query]
         );
     }
@@ -331,7 +351,9 @@ class AssetBankManager
      */
     public function modifyMedia($mediaId, array $data)
     {
-        return $this->requestHandler->sendRequestAsync('POST', 'api/v4/media/' . $mediaId . '/',
+        return $this->requestHandler->sendRequestAsync(
+            'POST',
+            'api/v4/media/' . $mediaId . '/',
             ['form_params' => $data]
         );
     }
@@ -359,10 +381,12 @@ class AssetBankManager
      */
     public function getMediaDownloadLocation($mediaId, $type = 'original')
     {
-        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/media/' . $mediaId . '/download/',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/media/' . $mediaId . '/download/',
             [
                 'query' =>
-                    ['type' => $type]
+                    ['type' => $type],
             ]
         );
     }
@@ -377,8 +401,10 @@ class AssetBankManager
      */
     public function getMediaDownloadLocationByVersion($mediaId, $version)
     {
-        return $this->requestHandler->sendRequestAsync('GET',
-            'api/v4/media/' . $mediaId . '/' . $version . '/download/');
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/media/' . $mediaId . '/' . $version . '/download/'
+        );
     }
 
     /**
@@ -386,16 +412,18 @@ class AssetBankManager
      *
      * @param  string  $mediaId  The Bynder media identifier (Asset id)
      * @param  string  $itemId  The id of the specific asset item you’d like to download
-     * @param  boolean  $hash  Indicates whether or not to treat the itemId as a hashed item id
+     * @param  bool  $hash  Indicates whether or not to treat the itemId as a hashed item id
      * @return \GuzzleHttp\Promise\Promise
      * @throws \GuzzleHttp\Exception\RequestException
      */
     public function getMediaDownloadLocationForAssetItem($mediaId, $itemId, $hash = false)
     {
-        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/media/' . $mediaId . '/download/' . $itemId . '/',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/media/' . $mediaId . '/download/' . $itemId . '/',
             [
                 'query' =>
-                    ['hash' => $hash]
+                    ['hash' => $hash],
             ]
         );
     }
@@ -409,7 +437,9 @@ class AssetBankManager
      */
     public function createUsage($query)
     {
-        return $this->requestHandler->sendRequestAsync('POST', 'api/media/usage',
+        return $this->requestHandler->sendRequestAsync(
+            'POST',
+            'api/media/usage',
             ['form_params' => $query]
         );
     }
@@ -423,7 +453,9 @@ class AssetBankManager
      */
     public function getUsage($query)
     {
-        return $this->requestHandler->sendRequestAsync('GET', 'api/media/usage',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/media/usage',
             ['query' => $query]
         );
     }
@@ -437,7 +469,9 @@ class AssetBankManager
      */
     public function deleteUsage($query)
     {
-        return $this->requestHandler->sendRequestAsync('DELETE', 'api/media/usage',
+        return $this->requestHandler->sendRequestAsync(
+            'DELETE',
+            'api/media/usage',
             ['query' => $query]
         );
     }
@@ -452,7 +486,9 @@ class AssetBankManager
      */
     public function syncAssetUsage($data)
     {
-        return $this->requestHandler->sendRequestAsync('POST', 'api/media/usage/sync',
+        return $this->requestHandler->sendRequestAsync(
+            'POST',
+            'api/media/usage/sync',
             ['json' => $data]
         );
     }
@@ -460,13 +496,15 @@ class AssetBankManager
     /**
      * Gets all collections based on optional query parameters.
      *
-     * @param  null|array  $query
+     * @param  array|null  $query
      * @return \GuzzleHttp\Promise\Promise
      * @throws \GuzzleHttp\Exception\RequestException
      */
     public function getCollections($query = null)
     {
-        return $this->requestHandler->sendRequestAsync('GET', 'api/v4/collections/',
+        return $this->requestHandler->sendRequestAsync(
+            'GET',
+            'api/v4/collections/',
             ['query' => $query]
         );
     }

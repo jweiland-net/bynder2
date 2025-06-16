@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the league/oauth2-client library
  *
@@ -14,13 +15,9 @@
 
 namespace League\OAuth2\Client\Grant\Exception;
 
-use InvalidArgumentException;
-
 /**
  * Exception thrown if the grant does not extend from AbstractGrant.
  *
  * @see League\OAuth2\Client\Grant\AbstractGrant
  */
-class InvalidGrantException extends InvalidArgumentException
-{
-}
+class InvalidGrantException extends \InvalidArgumentException {}

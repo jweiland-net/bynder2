@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the league/oauth2-client library
  *
@@ -14,7 +15,6 @@
 
 namespace League\OAuth2\Client\Provider;
 
-use InvalidArgumentException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
@@ -56,7 +56,7 @@ class GenericProvider extends AbstractProvider
     /**
      * @var array|null
      */
-    private $scopes = null;
+    private $scopes;
 
     /**
      * @var string
@@ -81,7 +81,7 @@ class GenericProvider extends AbstractProvider
     /**
      * @var string|null
      */
-    private $pkceMethod = null;
+    private $pkceMethod;
 
     /**
      * @param array $options
@@ -141,15 +141,14 @@ class GenericProvider extends AbstractProvider
      * Verifies that all required options have been passed.
      *
      * @param  array $options
-     * @return void
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     private function assertRequiredOptions(array $options)
     {
         $missing = array_diff_key(array_flip($this->getRequiredOptions()), $options);
 
         if (!empty($missing)) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 'Required options not defined: ' . implode(', ', array_keys($missing))
             );
         }
@@ -229,9 +228,9 @@ class GenericProvider extends AbstractProvider
             if (!is_string($error)) {
                 $error = var_export($error, true);
             }
-            $code  = $this->responseCode && !empty($data[$this->responseCode])? $data[$this->responseCode] : 0;
+            $code  = $this->responseCode && !empty($data[$this->responseCode]) ? $data[$this->responseCode] : 0;
             if (!is_int($code)) {
-                $code = intval($code);
+                $code = (int)$code;
             }
             throw new IdentityProviderException($error, $code, $data);
         }

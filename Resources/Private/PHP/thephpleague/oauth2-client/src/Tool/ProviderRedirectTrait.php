@@ -4,7 +4,6 @@ namespace League\OAuth2\Client\Tool;
 
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Psr7\Uri;
-use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -13,7 +12,7 @@ trait ProviderRedirectTrait
     /**
      * Maximum number of times to follow provider initiated redirects
      *
-     * @var integer
+     * @var int
      */
     protected $redirectLimit = 2;
 
@@ -33,7 +32,7 @@ trait ProviderRedirectTrait
         while ($attempts < $this->redirectLimit) {
             $attempts++;
             $response = $this->getHttpClient()->send($request, [
-                'allow_redirects' => false
+                'allow_redirects' => false,
             ]);
 
             if ($this->isRedirect($response)) {
@@ -57,7 +56,7 @@ trait ProviderRedirectTrait
     /**
      * Retrieves current redirect limit.
      *
-     * @return integer
+     * @return int
      */
     public function getRedirectLimit()
     {
@@ -69,7 +68,7 @@ trait ProviderRedirectTrait
      *
      * @param  ResponseInterface  $response
      *
-     * @return boolean
+     * @return bool
      */
     protected function isRedirect(ResponseInterface $response)
     {
@@ -101,18 +100,18 @@ trait ProviderRedirectTrait
     /**
      * Updates the redirect limit.
      *
-     * @param integer $limit
+     * @param int $limit
      * @return League\OAuth2\Client\Provider\AbstractProvider
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function setRedirectLimit($limit)
     {
         if (!is_int($limit)) {
-            throw new InvalidArgumentException('redirectLimit must be an integer.');
+            throw new \InvalidArgumentException('redirectLimit must be an integer.');
         }
 
         if ($limit < 1) {
-            throw new InvalidArgumentException('redirectLimit must be greater than or equal to one.');
+            throw new \InvalidArgumentException('redirectLimit must be greater than or equal to one.');
         }
 
         $this->redirectLimit = $limit;

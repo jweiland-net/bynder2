@@ -2,8 +2,6 @@
 
 namespace Bynder\Api\Impl\PermanentTokens;
 
-use Guzzle;
-
 use Bynder\Api\Impl\AbstractRequestHandler;
 
 class RequestHandler extends AbstractRequestHandler

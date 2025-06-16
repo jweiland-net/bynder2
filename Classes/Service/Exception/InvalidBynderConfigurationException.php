@@ -14,6 +14,4 @@ namespace JWeiland\Bynder2\Service\Exception;
 /*
  * Will be thrown, if BynderService was constructed with an invalid Bynder configuration
  */
-class InvalidBynderConfigurationException extends \Exception
-{
-}
+class InvalidBynderConfigurationException extends \Exception {}

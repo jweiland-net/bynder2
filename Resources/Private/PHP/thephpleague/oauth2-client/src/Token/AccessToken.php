@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the league/oauth2-client library
  *
@@ -13,9 +14,6 @@
  */
 
 namespace League\OAuth2\Client\Token;
-
-use InvalidArgumentException;
-use RuntimeException;
 
 /**
  * Represents an access token.
@@ -58,7 +56,6 @@ class AccessToken implements AccessTokenInterface, ResourceOwnerAccessTokenInter
      * Set the time now. This should only be used for testing purposes.
      *
      * @param int $timeNow the time in seconds since epoch
-     * @return void
      */
     public static function setTimeNow($timeNow)
     {
@@ -67,8 +64,6 @@ class AccessToken implements AccessTokenInterface, ResourceOwnerAccessTokenInter
 
     /**
      * Reset the time now if it was set for test purposes.
-     *
-     * @return void
      */
     public static function resetTimeNow()
     {
@@ -88,12 +83,12 @@ class AccessToken implements AccessTokenInterface, ResourceOwnerAccessTokenInter
      *
      * @param array $options An array of options returned by the service provider
      *     in the access token request. The `access_token` option is required.
-     * @throws InvalidArgumentException if `access_token` is not provided in `$options`.
+     * @throws \InvalidArgumentException if `access_token` is not provided in `$options`.
      */
     public function __construct(array $options = [])
     {
         if (empty($options['access_token'])) {
-            throw new InvalidArgumentException('Required option not passed: "access_token"');
+            throw new \InvalidArgumentException('Required option not passed: "access_token"');
         }
 
         $this->accessToken = $options['access_token'];
@@ -118,7 +113,7 @@ class AccessToken implements AccessTokenInterface, ResourceOwnerAccessTokenInter
         } elseif (!empty($options['expires'])) {
             // Some providers supply the seconds until expiration rather than
             // the exact timestamp. Take a best guess at which we received.
-            $expires = (int) $options['expires'];
+            $expires = (int)$options['expires'];
 
             if (!$this->isExpirationTimestamp($expires)) {
                 $expires += $this->getTimeNow();
@@ -142,7 +137,7 @@ class AccessToken implements AccessTokenInterface, ResourceOwnerAccessTokenInter
     /**
      * Check if a value is an expiration timestamp or second value.
      *
-     * @param integer $value
+     * @param int $value
      * @return bool
      */
     protected function isExpirationTimestamp($value)
@@ -150,7 +145,7 @@ class AccessToken implements AccessTokenInterface, ResourceOwnerAccessTokenInter
         // If the given value is larger than the original OAuth 2 draft date,
         // assume that it is meant to be a (possible expired) timestamp.
         $oauth2InceptionDate = 1349067600; // 2012-10-01
-        return ($value > $oauth2InceptionDate);
+        return $value > $oauth2InceptionDate;
     }
 
     /**
@@ -201,7 +196,7 @@ class AccessToken implements AccessTokenInterface, ResourceOwnerAccessTokenInter
         $expires = $this->getExpires();
 
         if (empty($expires)) {
-            throw new RuntimeException('"expires" is not set on the token');
+            throw new \RuntimeException('"expires" is not set on the token');
         }
 
         return $expires < $this->getTimeNow();
@@ -220,7 +215,7 @@ class AccessToken implements AccessTokenInterface, ResourceOwnerAccessTokenInter
      */
     public function __toString()
     {
-        return (string) $this->getToken();
+        return (string)$this->getToken();
     }
 
     /**

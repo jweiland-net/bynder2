@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the league/oauth2-client library
  *
@@ -20,7 +21,6 @@ interface SettableRefreshTokenInterface
      * Sets or replaces the refresh token with the provided refresh token.
      *
      * @param string $refreshToken
-     * @return void
      */
     public function setRefreshToken($refreshToken);
 }
