@@ -37,6 +37,8 @@ class BynderDriver extends AbstractDriver
 
     protected SysFileRepository $fileRepository;
 
+    protected BynderClientFactory $bynderClientFactory;
+
     protected FlashMessageService $flashMessageService;
 
     protected FrontendInterface $cache;
@@ -64,14 +66,12 @@ class BynderDriver extends AbstractDriver
         $this->capabilities = new Capabilities(Capabilities::CAPABILITY_BROWSABLE);
     }
 
-    public function processConfiguration(): void
-    {
-        // no need to configure something.
-    }
+    public function processConfiguration(): void {}
 
     public function initialize(): void
     {
         $this->fileRepository = GeneralUtility::makeInstance(SysFileRepository::class);
+        $this->bynderClientFactory = GeneralUtility::makeInstance(BynderClientFactory::class);
         $this->flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
 
         try {
@@ -122,7 +122,7 @@ class BynderDriver extends AbstractDriver
 
     public function createFolder($newFolderName, $parentFolderIdentifier = '', $recursive = false): string
     {
-        // Bynder has no folders and can not create any folders. Do nothing, but give a valid feedback to FAL
+        // Bynder has no folders and cannot create any folders. Do nothing, but give a valid feedback to FAL
         return '';
     }
 
@@ -168,13 +168,13 @@ class BynderDriver extends AbstractDriver
 
     public function addFile($localFilePath, $targetFolderIdentifier, $newFileName = '', $removeOriginal = true): string
     {
-        // @ToDo: To be implemented
+        // Bynder driver is readonly
         return '';
     }
 
     public function createFile($fileName, $parentFolderIdentifier): string
     {
-        // @ToDo: To be implemented
+        // Bynder driver is readonly
         return '';
     }
 
@@ -186,19 +186,19 @@ class BynderDriver extends AbstractDriver
 
     public function renameFile($fileIdentifier, $newName): string
     {
-        // @ToDo: To be implemented
+        // Bynder driver is readonly
         return '';
     }
 
     public function replaceFile($fileIdentifier, $localFilePath): bool
     {
-        // @ToDo: To be implemented
+        // Bynder driver is readonly
         return false;
     }
 
     public function deleteFile($fileIdentifier): bool
     {
-        // @ToDo: To be implemented
+        // Bynder driver is readonly
         return false;
     }
 
@@ -228,8 +228,12 @@ class BynderDriver extends AbstractDriver
 
     public function getFileContents($fileIdentifier): string
     {
-        if ($cdnDownloadUrl = $this->bynderService->getCdnDownloadUrl($this->bynderClient, $fileIdentifier)) {
-            return file_get_contents($cdnDownloadUrl);
+        try {
+            $client = $this->bynderClientFactory->createClientWrapper($this->configuration);
+            if ($cdnDownloadUrl = $client->getCdnDownloadUrl($fileIdentifier)) {
+                return file_get_contents($cdnDownloadUrl);
+            }
+        } catch (\Exception) {
         }
 
         return '';
@@ -237,13 +241,12 @@ class BynderDriver extends AbstractDriver
 
     public function setFileContents($fileIdentifier, $contents): int
     {
-        // @ToDo: To be implemented
+        // Bynder driver is readonly
         return 0;
     }
 
     public function fileExistsInFolder($fileName, $folderIdentifier): bool
     {
-        \TYPO3\CMS\Core\Utility\DebugUtility::debug($fileName, 'fileExistsInFolder was called with fileName: ' . $fileName);
         return $this->fileExists($folderIdentifier . $fileName);
     }
 
@@ -431,14 +434,11 @@ class BynderDriver extends AbstractDriver
 
     public function countFilesInFolder($folderIdentifier, $recursive = false, array $filenameFilterCallbacks = []): int
     {
-        static $amountOfFiles = null;
-
-        // Bynder does not work folder-based. So just return the number of all files.
-        if ($amountOfFiles === null) {
-            $amountOfFiles = $this->bynderService->countFiles($this->bynderClient);
+        if ($this->storageUid !== null) {
+            return $this->fileRepository->countFilesOfStorage($this->storageUid);
         }
 
-        return $amountOfFiles;
+        return 0;
     }
 
     public function countFoldersInFolder(

@@ -8,6 +8,7 @@ use JWeiland\Bynder2\Form\Element\BynderAuthorizationUrlElement;
 use JWeiland\Bynder2\Form\Element\BynderStatusElement;
 use JWeiland\Bynder2\Resource\BynderExtractor;
 use JWeiland\Bynder2\Resource\Processing\BynderBackendProcessor;
+use JWeiland\Bynder2\Resource\Processing\BynderFrontendProcessor;
 use Psr\Log\LogLevel;
 use TYPO3\CMS\Core\Cache\Backend\TransientMemoryBackend;
 use TYPO3\CMS\Core\Log\Writer\FileWriter;
@@ -59,5 +60,15 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['processors']['BynderBackendProcessor'
     ],
     'after' => [
         'SvgImageProcessor',
+    ],
+];
+
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['processors']['BynderFrontendProcessor'] = [
+    'className' => BynderFrontendProcessor::class,
+    'before' => [
+        'LocalImageProcessor',
+    ],
+    'after' => [
+        'OnlineMediaPreviewProcessor',
     ],
 ];

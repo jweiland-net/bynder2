@@ -83,6 +83,33 @@ readonly class SysFileRepository
         return $fileIdentifiers;
     }
 
+    public function countFilesOfStorage(int $storageUid): int
+    {
+        $queryBuilder = $this->getRestrictedQueryBuilder();
+
+        try {
+            $numberOfFileRecords = (int)$queryBuilder
+                ->count('*')
+                ->from(self::TABLE)
+                ->where(
+                    $queryBuilder->expr()->eq(
+                        'storage',
+                        $queryBuilder->createNamedParameter($storageUid, Connection::PARAM_INT)
+                    ),
+                    $queryBuilder->expr()->eq(
+                        'missing',
+                        $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)
+                    ),
+                )
+                ->executeQuery()
+                ->fetchOne();
+        } catch (Exception) {
+            $numberOfFileRecords = 0;
+        }
+
+        return $numberOfFileRecords;
+    }
+
     public function hasFileIdentifierInStorage(string $identifier, int $storageUid): bool
     {
         $queryBuilder = $this->getRestrictedQueryBuilder();

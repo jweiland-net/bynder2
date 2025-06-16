@@ -16,7 +16,6 @@ use JWeiland\Bynder2\Configuration\ExtConf;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Utility\MathUtility;
-use TYPO3\CMS\Recordlist\Browser\FileBrowser;
 
 /**
  * Service to connect to the Bynder API and retrieving the files
@@ -68,10 +67,6 @@ class BynderService implements LoggerAwareInterface
     ): \Generator {
         $start = MathUtility::forceIntegerInRange($start, 1);
 
-        if ($numberOfFiles === 0 && $this->isFileBrowserCall()) {
-            $numberOfFiles = $this->extConf->getNumberOfFilesInFileBrowser();
-        }
-
         if ($numberOfFiles === 0) {
             $limit = self::MAX_FILES_EACH_REQUEST;
             $page = (int)floor($start / self::MAX_FILES_EACH_REQUEST) + 1;
@@ -118,69 +113,5 @@ class BynderService implements LoggerAwareInterface
         } catch (\Exception $exception) {
             $this->logger->error('Bynder API error: ' . $exception->getMessage(), ['exception' => $exception]);
         }
-    }
-
-    public function countFiles(BynderClient $bynderClient): int
-    {
-        $mediaUsage = $bynderClient->getAssetBankManager()->getMediaList([
-            'count' => 0,
-            'limit' => 0,
-            'total' => 1,
-            'includeMediaItems' => 0,
-            'isPublic' => 0,
-            'archive' => 0,
-        ])->wait();
-
-        return $mediaUsage['total']['count'] ?? 0;
-    }
-
-    /**
-     * This method will return a public URL to the original file.
-     * No crop, no resize, no thumbnail.
-     */
-    public function getCdnDownloadUrl(BynderClient $bynderClient, string $fileIdentifier): string
-    {
-        static $cdnDownloadUrlCache = [];
-
-        if (array_key_exists($fileIdentifier, $cdnDownloadUrlCache)) {
-            return $cdnDownloadUrlCache[$fileIdentifier];
-        }
-
-        $cdnDownloadUrl = '';
-        try {
-            $remoteFileResponse = $bynderClient->getAssetBankManager()->getMediaDownloadLocation(
-                $fileIdentifier
-            )->wait();
-            $cdnDownloadUrl = $remoteFileResponse['s3_file'] ?? '';
-        } catch (\Exception $exception) {
-            // If the file was not found at Bynder, it reacts with an Exception
-            $this->logger->error(
-                'CDN download URL for file "' . $fileIdentifier . '" could not be retrieved',
-                [
-                    'exception' => $exception,
-                ]
-            );
-        }
-
-        $cdnDownloadUrlCache[$fileIdentifier] = $cdnDownloadUrl;
-
-        return $cdnDownloadUrl;
-    }
-
-    /**
-     * If the call comes from FileBrowser, the number of files is not limited. As Bynder works with just ONE folder,
-     * you will always get ALL files of Bynder, which can be a lot of files to render, slows down performance and may
-     * break the rendering process (Error 500)
-     */
-    protected function isFileBrowserCall(): bool
-    {
-        $backTrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 7);
-        foreach ($backTrace as $entry) {
-            if ($entry['class'] === FileBrowser::class) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

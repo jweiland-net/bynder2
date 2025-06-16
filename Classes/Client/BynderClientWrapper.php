@@ -22,11 +22,11 @@ use JWeiland\Bynder2\Configuration\BynderTokenConfigurationInterface;
  * BynderTokenConfiguration is also updated. This implementation ensures the "expire" value can
  * be extracted reliably from the updated reference.
  */
-class BynderClientWrapper
+readonly class BynderClientWrapper
 {
     public function __construct(
-        private readonly BynderClient $bynderClient,
-        private readonly BynderTokenConfigurationInterface $bynderTokenConfiguration,
+        private BynderClient $bynderClient,
+        private BynderTokenConfigurationInterface $bynderTokenConfiguration,
     ) {}
 
     public function getBynderClient(): BynderClient
@@ -37,5 +37,20 @@ class BynderClientWrapper
     public function getBynderTokenConfiguration(): BynderTokenConfigurationInterface
     {
         return $this->bynderTokenConfiguration;
+    }
+
+    /**
+     * This method will return a public URL to the original file.
+     * No crop, no resize, no thumbnail.
+     *
+     * @throws \Exception If bynder cannot create a S3 CDN URL, it results in an exception
+     */
+    public function getCdnDownloadUrl(string $fileIdentifier): string
+    {
+        $remoteFileResponse = $this->bynderClient->getAssetBankManager()->getMediaDownloadLocation(
+            $fileIdentifier
+        )->wait();
+
+        return $remoteFileResponse['s3_file'] ?? '';
     }
 }
