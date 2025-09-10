@@ -40,6 +40,12 @@ Download and install `bynder2` with the extension manager module.
 2) Set credentials for Bynder
 3) You should see, if authentication was successfully after you click save.
 
+## 3 Support
+
+Free Support is available via [GitHub Issue Tracker](https://github.com/jweiland-net/bynder2/issues).
+
+For commercial support, please contact us at [support@jweiland.net](support@jweiland.net).
+
 <!-- MARKDOWN LINKS & IMAGES -->
 
 [extension-build-shield]: https://poser.pugx.org/jweiland/bynder2/v/stable.svg?style=for-the-badge
