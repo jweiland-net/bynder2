@@ -24,6 +24,7 @@ use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Driver\AbstractDriver;
 use TYPO3\CMS\Core\Resource\Exception\InvalidFileNameException;
 use TYPO3\CMS\Core\Resource\Exception\InvalidPathException;
+use TYPO3\CMS\Core\Resource\MimeTypeDetector;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
@@ -40,6 +41,8 @@ class BynderDriver extends AbstractDriver
     protected BynderClientFactory $bynderClientFactory;
 
     protected FlashMessageService $flashMessageService;
+
+    protected MimeTypeDetector $mimeTypeDetector;
 
     protected FrontendInterface $cache;
 
@@ -79,6 +82,7 @@ class BynderDriver extends AbstractDriver
         $this->fileRepository = GeneralUtility::makeInstance(SysFileRepository::class);
         $this->bynderClientFactory = GeneralUtility::makeInstance(BynderClientFactory::class);
         $this->flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
+        $this->mimeTypeDetector = GeneralUtility::makeInstance(MimeTypeDetector::class);
 
         try {
             $this->cache = $this->getCacheManager()->getCache('bynder2_file_response');
@@ -335,7 +339,7 @@ class BynderDriver extends AbstractDriver
 
     /**
      * @param array<string, mixed> $fileResponse
-     * @throws InvalidFileNameException
+     * @throws InvalidFileNameException|MimeTypeNotDetectedException
      */
     public function getSpecificFileInformation(array $fileResponse, string $property): string
     {
@@ -361,11 +365,15 @@ class BynderDriver extends AbstractDriver
             case 'extension':
                 return strtolower($fileResponse['extension'][0] ?? '');
             case 'mimetype':
-                $fileExt = strtolower($fileResponse['extension'][0] ?? '');
-                if (in_array($fileExt, ['jpg', 'jpeg', 'bmp', 'svg', 'ico', 'pdf', 'png', 'tiff'])) {
-                    return 'image/' . $fileExt;
+                $fileExtension = strtolower($fileResponse['extension'][0] ?? '');
+                $mimeTypes = $this->mimeTypeDetector->getMimeTypesForFileExtension($fileExtension);
+                if ($mimeTypes === [] || $mimeTypes[0] === '') {
+                    throw new MimeTypeNotDetectedException(
+                        'Could not detect mime type for file: "' . $fileResponse['name'] . '".',
+                        1770643894,
+                    );
                 }
-                return 'text/' . $fileExt;
+                return $mimeTypes[0];
             case 'identifier':
                 return $fileResponse['id'];
             case 'storage':

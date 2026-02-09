@@ -4,6 +4,11 @@
 ChangeLog
 =========
 
+Version 4.0.1 Release Notes
+===========================
+
+*   Detect mime type of files via MimeTypeDetector
+
 Version 4.0.0 Release Notes
 ===========================
 
