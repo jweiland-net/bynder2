@@ -367,7 +367,7 @@ class BynderDriver extends AbstractDriver
             case 'mimetype':
                 $fileExtension = strtolower($fileResponse['extension'][0] ?? '');
                 $mimeTypes = $this->mimeTypeDetector->getMimeTypesForFileExtension($fileExtension);
-                return $mimeTypes[0] ?? '';
+                return $mimeTypes[0] ?? 'text/' . $fileExtension;
             case 'identifier':
                 return $fileResponse['id'];
             case 'storage':
