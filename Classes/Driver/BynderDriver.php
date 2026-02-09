@@ -339,7 +339,7 @@ class BynderDriver extends AbstractDriver
 
     /**
      * @param array<string, mixed> $fileResponse
-     * @throws InvalidFileNameException
+     * @throws InvalidFileNameException|MimeTypeNotDetectedException
      */
     public function getSpecificFileInformation(array $fileResponse, string $property): string
     {
@@ -367,7 +367,13 @@ class BynderDriver extends AbstractDriver
             case 'mimetype':
                 $fileExtension = strtolower($fileResponse['extension'][0] ?? '');
                 $mimeTypes = $this->mimeTypeDetector->getMimeTypesForFileExtension($fileExtension);
-                return $mimeTypes[0] ?? 'text/' . $fileExtension;
+                if ($mimeTypes === [] || $mimeTypes[0] === '') {
+                    throw new MimeTypeNotDetectedException(
+                        'Could not detect mime type for file: "' . $fileResponse['name'] . '".',
+                        1770643894,
+                    );
+                }
+                return $mimeTypes[0];
             case 'identifier':
                 return $fileResponse['id'];
             case 'storage':

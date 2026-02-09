@@ -15,6 +15,7 @@ use Bynder\Api\BynderClient;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Types\BigIntType;
+use JWeiland\Bynder2\Driver\MimeTypeNotDetectedException;
 use JWeiland\Bynder2\Repository\SysFileRepository;
 use JWeiland\Bynder2\Service\BynderClientFactory;
 use JWeiland\Bynder2\Service\BynderService;
@@ -107,9 +108,21 @@ class SyncBynderFilesCommand extends Command
         $synchronizedFiles = 0;
         $indexer = $this->getIndexer($storage);
         foreach ($this->bynderService->getFiles($client, 0, 0) as $fileInformationFromResponse) {
-            $this->synchronizeFile($fileInformationFromResponse, $storage, $indexer, $io);
-            $newIdentifiers[] = $fileInformationFromResponse['id'];
-            $synchronizedFiles++;
+            try {
+                $this->synchronizeFile($fileInformationFromResponse, $storage, $indexer, $io);
+                $newIdentifiers[] = $fileInformationFromResponse['id'];
+                $synchronizedFiles++;
+            } catch (MimeTypeNotDetectedException $exception) {
+                $this->logger->error(
+                    $exception->getMessage(),
+                    [
+                        'exceptionFile' => $exception->getFile(),
+                        'exceptionLine' => $exception->getLine(),
+                        'exceptionCode' => $exception->getCode(),
+                    ],
+                );
+                $io->text(sprintf('%-35s    %s', $fileInformationFromResponse['id'], 'Skipped'));
+            }
         }
 
         $io->text(sprintf(
