@@ -93,7 +93,7 @@ class BynderBackendProcessor implements ProcessorInterface
         } elseif ($imageDimension->getWidth() <= 800) {
             $processingUrl = $processedFile->getProperty('bynder2_thumb_webimage') ?? '';
         } else {
-            $processingUrl = self::UNAVAILABLE_IMAGE_PATH;
+            $processingUrl = GeneralUtility::getFileAbsFileName(self::UNAVAILABLE_IMAGE_PATH);
         }
 
         return $processingUrl;
