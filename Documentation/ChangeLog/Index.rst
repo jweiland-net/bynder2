@@ -4,6 +4,11 @@
 ChangeLog
 =========
 
+Version 4.0.2 Release Notes
+===========================
+
+*   Resolve unavailable image path using absolute file path
+
 Version 4.0.1 Release Notes
 ===========================
 
